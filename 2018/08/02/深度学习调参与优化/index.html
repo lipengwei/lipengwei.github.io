@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。 提升模型性能的想法   从数据上提升性能 从算法上提升性能 从算法调优上提升性能 从模型融合上提升性能   这些可能并不完整，但在深度学习领域，有">
+<meta name="keywords" content="深度学习,调参,优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度学习调参与优化">
+<meta property="og:url" content="http://lipengwei.github.io/2018/08/02/深度学习调参与优化/index.html">
+<meta property="og:site_name" content="李鹏伟的技术博客">
+<meta property="og:description" content="一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。 提升模型性能的想法   从数据上提升性能 从算法上提升性能 从算法调优上提升性能 从模型融合上提升性能   这些可能并不完整，但在深度学习领域，有">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://lipengwei.github.io/images/l1l2.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/bn1.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/bn1.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/bn3.png">
+<meta property="og:updated_time" content="2018-08-03T03:59:37.161Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深度学习调参与优化">
+<meta name="twitter:description" content="一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。 提升模型性能的想法   从数据上提升性能 从算法上提升性能 从算法调优上提升性能 从模型融合上提升性能   这些可能并不完整，但在深度学习领域，有">
+<meta name="twitter:image" content="http://lipengwei.github.io/images/l1l2.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://lipengwei.github.io/2018/08/02/深度学习调参与优化/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深度学习调参与优化 | 李鹏伟的技术博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">李鹏伟的技术博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/02/深度学习调参与优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="李鹏伟">
+      <meta itemprop="description" content="AI">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李鹏伟的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深度学习调参与优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-02 21:20:59" itemprop="dateCreated datePublished" datetime="2018-08-02T21:20:59+08:00">2018-08-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-08-03 11:59:37" itemprop="dateModified" datetime="2018-08-03T11:59:37+08:00">2018-08-03</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。</p>
+<h3>提升模型性能的想法</h3>
+<blockquote>
+<ul>
+<li>从数据上提升性能</li>
+<li>从算法上提升性能</li>
+<li>从算法调优上提升性能</li>
+<li>从模型融合上提升性能</li>
+</ul>
+</blockquote>
+<p>这些可能并不完整，但在深度学习领域，有时候往往只需一个方面能够得到提升，整个模型的结构就会好上很多。</p>
+<h3>1.从数据上提升性能</h3>
+<p>调整训练数据或是调整问题定义的方法，可能会带来巨大的效果改善</p>
+<blockquote>
+<ul>
+<li>收集更多的数据</li>
+</ul>
+</blockquote>
+<p>尽可能的收集数据，同时确保数据集的质量</p>
+<blockquote>
+<ul>
+<li>产生更多的数据（噪声点，图像平移，旋转）
+如果你的数据是数值型的向量，那么随机生成已有向量的变形向量。
+如果你的数据是图像，用已有的图像随机生成相似图像。
+可以使用生成模型来生成，也可以使用一些经验技巧。</li>
+<li>对数据做缩放
+使用神经网络模型的一条经验法宝就是：将数据缩放到激活函数的阈值范围。
+例如1.归一化到0 ~ 1, 2.归一化到-1 ~ 1, 3. 标准化</li>
+<li>对数据做变换
+与上一节的方法相关，但是需要更多的工作量。你必须真正了解所用到的数据。数据可视化，然后挑出异常值。先猜测每一列数据的分布</li>
+<li>特征选择
+神经网络受不相关数据的影响很小。它们会对此赋予一个趋近于0的权重，几乎忽略此特征对预测值的贡献。你是否可以移除训练数据的某些属性呢？我们有许多的特征选择方法和特征重要性方法来鉴别哪些特征可以保留，哪些特征需要移除。</li>
+</ul>
+</blockquote>
+<h3>2.从算法上提升性能</h3>
+<p>机器学习总是与算法相关。所有的理论和数学知识都在描述从数据中学习决策过程的不同方法。以下是深度学习优化器，对比其中的优劣势，来选择合适的优化算法。</p>
+<h4>1.BGD(Batch Gradient Descent)</h4>
+<p>每次更新我们需要计算整个数据集的梯度，因此使用批量梯度下降进行优化时，计算速度很慢，而且对于不适合内存计算的数据将会非常棘手。批量梯度下降算法不允许我们实时更新模型$$\theta = \theta - \eta \nabla J(\theta)$$,但是BGD算法能确保收敛到凸平面的全局最优和非凸平面的局部最优。tensorflow中的接口是 <code>tf.train.GradientDescentOptimizer</code>,</p>
+<h4>2.SGD(Stochastic Gradient Descent)</h4>
+<p>随机梯度下降算法参数更新针对每一个样本$x_{i}$和$y_{i}$，批量梯度下降算法在大数据量时会产生大量的冗余计算，比如：每次针对相似样本都会重新计算。这种情况下，SGD算法每次只更新一次，因此SGD算法更快，适合做online。$$\theta = \theta - \eta \nabla J(\theta;x^{i},y^{i})$$,但SGD以高方差进行快速更新，会导致目标函数出现抖动情况。有两种情况：</p>
+<blockquote>
+<ul>
+<li>因为计算的抖动可以让梯度计算挑出局部最优，到达一个更好的最优点</li>
+<li>SGD会次因产生过拟合</li>
+</ul>
+</blockquote>
+<h4>3.MBGD(Min-batch Gradient Descent)</h4>
+<p>该算法有两个好处：</p>
+<blockquote>
+<ul>
+<li>减少参数更新的变化，可以带来更稳定的收敛</li>
+<li>可以充分利用矩阵优化，计算更高效</li>
+</ul>
+</blockquote>
+<p>但是Min-batch梯度下降不保证好的收敛性。$$\theta=\theta-\eta \nabla J(\theta;x^{(i;i+n)};y^{(i;i+n)})$$，n表示一次更新的数量。
+BGD、SGD、MBGD算法都需要预先设置学习率，并且整个模型计算过程都采用相同的学习率，这会带来一些问题。后面会写到学习率的调整策略。</p>
+<h4>4.Momentum（动量）</h4>
+<p>动量可以加速SGD算法的收敛速度，并且降低SGD算法收敛时的震荡。$$v_{t}=\lambda v_{t-1} + \eta \nabla J(\theta)$$ $$\theta = \theta - v_{t}$$，通过添加一个衰减因子到历史更新向量，并加上当前的更新向量。当梯度保持相同方向是，动量因子加速更新参数，而梯度方向改变时，动量因子能降低梯度更新速度。</p>
+<h4>5.Adagrad</h4>
+<p>Adagrad优化算法是一种自适应优化算法，针对高频特征更新步长较小，而低频特征更新较大。因此该算法适合应用在特征稀疏的场景。
+先前的算法对每一次参数更新都是采用同一个学习率，而Adagrad算法每一步采用不同的学习率进行更新。SGD算法调参公式：$$\theta_{t+1,i}=\theta_{t,i}-\eta g_{t,i}$$，Adagrad算法在每一步的计算时候，根据历史梯度对学习率进行修改：
+$$\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
+其中$ G_{t}=\sum_{i=0}^{t}(g^{i})^{2}$，Adagrad算法的主要优点是它避免了手动调整学习率的麻烦，大部分使用默认的0.01。Adagrad算法的主要缺点在于，其分母梯度的平方累加和，因为每次加入的都是一个正数，随着训练的进行，学习率将会变得无限小，此时算法将不能进行参数的迭代更新。</p>
+<h4>6.Adadelta</h4>
+<p>Adadelta算法是Adagrad算法的改进版，它主要解决了adagrad算法单调递减学习率的问题。通过约束历史梯度累加来替代累加所有历史梯度平方。这里通过在历史梯度上添加衰减因子，并通过迭代的方式来对当前的梯度进行计算，最终距离较远的梯度对当前的影响较小，而距离当前时刻较近的梯度对当前梯度的计算影响较大。</p>
+<h4>7.RMDprop</h4>
+<p>RMSPprop算法和adadelta算法都是adagrad算法的优化版，用于解决adagrad算法学习率消失的问题，从最终的计算公式来看，RMSProp算法和Adadelta算法有相似的计算表达式:$$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\theta^{t+1}=\theta^{t}-\eta \frac{g^{t}}{\sqrt{r^{t} + \epsilon}}$$，一般情况下，$\rho=0.9$</p>
+<h4>8.Adam</h4>
+<p>Adam算法是另一种自适应参数更新算法。和Adadelta、RMSProp算法一样，对历史平方梯度$v^{t}$乘上一个衰减因子，adam算法还存储了一个历史梯度$r^{t}$。$$v^{t+1}=\lambda r^{t}+(1-\lambda)g^{t}$$    $$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\hat v^{t} = \frac{v^{t}}{1-\lambda}$$  $$\hat r^{t} = \frac{r^{t}}{1-\rho}$$ $$\theta^{t+1} = \theta^{t} - \eta \frac{\hat v^{t}}{\sqrt{\hat r^{t} + \epsilon}}$$</p>
+<h4>总结</h4>
+<p>当训练数据特征较为稀疏的时候，采用自适应的优化器通常能获得更好的性能，而且我们采用自适应优化器的默认值即可获得较优的性能。</p>
+<p>RMSprop算法是adagrad算法的优化版，它解决了学习率趋近于零的问题。Adadelta算法和RMSprop算法类似，区别在于Adadelta用参数的RMS作为更新规则的分子。最后，Adam则是在RMSprop的基础上加入了偏差校正和动量。综上来看，Adam可能是最佳的选择。</p>
+<p>所以，如果你想模型更快的收敛或者训练一个深层次、复杂度较高的网络，自适应的优化器应该是首选优化器。</p>
+<h3>3.从算法调优上提升性能</h3>
+<p>你通过算法筛选往往总能找出一到两个效果不错的算法。但想要达到这些算法的最佳状态需要耗费数日、数周甚至数月。下面是一些常用技巧，在调参时能有助于提升算法的性能。</p>
+<h4>1.数据集、验证集、测试集</h4>
+<p>只有知道为何模型的性能不再有提升了，才能达到最好的效果。一种快速查看模型性能的方法就是每一步计算模型在训练集和验证集上的表现，计算出在训练集和验证集上测试模型的准确率。</p>
+<blockquote>
+<ul>
+<li>如果训练集的效果好于验证集，说明可能存在过拟合的现象，试一试增加正则项。</li>
+<li>如果训练集和验证集的准确率都很低，说明可能存在欠拟合，你可以继续提升模型的能力，延长训练步骤。</li>
+<li>如果训练集和验证集的曲线有一个焦点，可能需要用到early stopping的技巧了。</li>
+</ul>
+</blockquote>
+<h4>2.初始化权重</h4>
+<p>有一条经验规则：用小的随机数初始化权重。事实上，这可能已经足够了。还有几种可以尝试的策略：</p>
+<blockquote>
+<ul>
+<li>尝试所有的初始化方法(全0，全1，正态高斯截断，glorot初始化等)
+参考这篇 <a href="http://deepdish.io/2015/02/24/network-initialization/" target="_blank" rel="noopener">深度网络模型的初始化</a></li>
+<li>试一试用非监督式方法预学习，比如自动编码机</li>
+<li>迁移学习</li>
+</ul>
+</blockquote>
+<h4>3.学习率</h4>
+<p>调节学习率也能带来效果提升。策略如下：</p>
+<blockquote>
+<ul>
+<li>尝试非常大、非常小的学习率</li>
+<li>尝试逐步减小学习率</li>
+<li>尝试自适应学习率</li>
+</ul>
+</blockquote>
+<h4>4.激活函数</h4>
+<p>常用的激活函数有sigmoid,tanh,RelU,他们各有优缺点，可以都尝试一下：
+sigmoid特点：</p>
+<blockquote>
+<ul>
+<li>容易饱和，出现梯度消失，需要注意参数初始化方式来避免饱和</li>
+<li>输出不是0均值，会对梯度产生影响</li>
+</ul>
+</blockquote>
+<p>tanh 特点：</p>
+<blockquote>
+<ul>
+<li>也存在梯度消失的问题，但是是0均值，收敛速度比sigmoid快</li>
+</ul>
+</blockquote>
+<p>RelU 特点：</p>
+<blockquote>
+<ul>
+<li>收敛速度比sigmoid和tanh快很多</li>
+<li>可以缓和梯度消失现象</li>
+<li>存在硬饱和现象和偏移现象</li>
+</ul>
+</blockquote>
+<h4>5.网络结构</h4>
+<p>调整网络的拓扑结构也会有一些帮助。你需要设计多少个节点，需要几层网络呢？策略如下：</p>
+<blockquote>
+<ul>
+<li>试一试加一层有许多节点的隐层（拓宽）</li>
+<li>试一试一个深层的神经网络（拓深）</li>
+<li>尝试结合以上两种</li>
+<li>查看近期论文</li>
+</ul>
+</blockquote>
+<h4>6.batch和epoch</h4>
+<p>batch的大小决定了梯度值，以及权重更新的频率。一个epoch指的是训练集的所有样本都参与了一轮训练，以batch为序。你尝试过不同的batch大小和epoch的次数。</p>
+<h4>7.正则项</h4>
+<p>正则化是克服训练数据过拟合的好方法。有以下策略可以尝试：</p>
+<blockquote>
+<ul>
+<li>增加L1正则项 ($C=C_{0}+\frac{\lambda}{n} \sum_{w}|w|$)
+L1正则项的作用时可以让一些权重为0，让权重矩阵稀疏</li>
+<li>增加L2正则项($C=C_{0}+\frac{\lambda}{2n} \sum_{w}w^{2} $)
+L2正则的作用时让权重值尽可能的小</li>
+</ul>
+</blockquote>
+<p><img src="/images/l1l2.png" alt="L1与L2正则"></p>
+<blockquote>
+<ul>
+<li>增加dropout层。
+在一次循环中我们通过概率将神经层中的一些单元临时隐藏，然后再进行该次循环中神经网络的训练和优化过程。在训练时，每个神经单元以概率p被保留(dropout丢弃率为1-p)；在测试阶段，每个神经单元都是存在的，权重参数w要乘以p，成为：pw。<a href="https://www.cnblogs.com/makefile/p/dropout.html" target="_blank" rel="noopener">dropout详解</a></li>
+<li>增加BN层（Batch Normalization）
+BN算法通过对一个Batch的输出归一化。使得梯度始终在非饱和区。</li>
+</ul>
+</blockquote>
+<p>看图理解BN：
+<img src="/images/bn1.png" alt="BN1">
+<img src="/images/bn1.png" alt="BN2">
+BN算法过程：
+<img src="/images/bn3.png" alt="BN3">
+BN的优点：</p>
+<blockquote>
+<ul>
+<li>你可以选择比较大的初始化学习率，因为BN算法学习率衰减的很快。</li>
+<li>你可以不用理会dropout、L2正则项参数选择问题，采用BN后，可以移除这两项参数，或者可以选择更小的L2约束参数。BN提高了网络泛化能力</li>
+<li>不需要使用局部相应归一化层了(Alexnet网络用到的方法，CV)，因为BN本身就是一个归一化网络层</li>
+</ul>
+</blockquote>
+<h3>4.用融合方法提升效果</h3>
+<p>你可以将多个模型的预测结果融合。继模型调优之后，这是另一个大的提升领域。事实上，往往将几个效果还可以的模型的预测结果融合，取得的效果要比多个精细调优的模型分别预测的效果好。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/深度学习-调参-优化/" rel="tag"># 深度学习,调参,优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/02/深度学习之DNN、CNN和RNN/" rel="next" title="深度学习之DNN、CNN和RNN">
+                <i class="fa fa-chevron-left"></i> 深度学习之DNN、CNN和RNN
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">李鹏伟</p>
+              <p class="site-description motion-element" itemprop="description">AI</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">提升模型性能的想法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">1.从数据上提升性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">2.从算法上提升性能</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.1.</span> <span class="nav-text">1.BGD(Batch Gradient Descent)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.2.</span> <span class="nav-text">2.SGD(Stochastic Gradient Descent)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.3.</span> <span class="nav-text">3.MBGD(Min-batch Gradient Descent)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.4.</span> <span class="nav-text">4.Momentum（动量）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.5.</span> <span class="nav-text">5.Adagrad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.6.</span> <span class="nav-text">6.Adadelta</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.7.</span> <span class="nav-text">7.RMDprop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.8.</span> <span class="nav-text">8.Adam</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">3.9.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">3.从算法调优上提升性能</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.1.</span> <span class="nav-text">1.数据集、验证集、测试集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.2.</span> <span class="nav-text">2.初始化权重</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.</span> <span class="nav-text">3.学习率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.4.</span> <span class="nav-text">4.激活函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.5.</span> <span class="nav-text">5.网络结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.</span> <span class="nav-text">6.batch和epoch</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.7.</span> <span class="nav-text">7.正则项</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text">4.用融合方法提升效果</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李鹏伟</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+    
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

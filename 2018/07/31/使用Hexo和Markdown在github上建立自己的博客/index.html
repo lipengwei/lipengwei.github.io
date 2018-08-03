@@ -108,18 +108,18 @@
 
 
 
-  <meta name="description" content="环境准备 1. 安装Node.js 2. 安装hexo 1npm install hexo-cli -g #####3. 搭建静态博客 1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 #####4. 写博客 1234$ hexo new article# 使用markdown编辑器编">
+  <meta name="description" content="环境准备1. 安装Node.js2. 安装hexo1npm install hexo-cli -g 3. 搭建静态博客1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 4. 写博客1234$ hexo new article# 使用markdown编辑器编辑$ hexo generat">
 <meta name="keywords" content="hexo, markdown">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Hexo和Markdown在github上建立自己的博客">
 <meta property="og:url" content="http://lipengwei.github.io/2018/07/31/使用Hexo和Markdown在github上建立自己的博客/index.html">
 <meta property="og:site_name" content="李鹏伟的技术博客">
-<meta property="og:description" content="环境准备 1. 安装Node.js 2. 安装hexo 1npm install hexo-cli -g #####3. 搭建静态博客 1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 #####4. 写博客 1234$ hexo new article# 使用markdown编辑器编">
+<meta property="og:description" content="环境准备1. 安装Node.js2. 安装hexo1npm install hexo-cli -g 3. 搭建静态博客1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 4. 写博客1234$ hexo new article# 使用markdown编辑器编辑$ hexo generat">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2018-07-31T09:20:52.848Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Hexo和Markdown在github上建立自己的博客">
-<meta name="twitter:description" content="环境准备 1. 安装Node.js 2. 安装hexo 1npm install hexo-cli -g #####3. 搭建静态博客 1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 #####4. 写博客 1234$ hexo new article# 使用markdown编辑器编">
+<meta name="twitter:description" content="环境准备1. 安装Node.js2. 安装hexo1npm install hexo-cli -g 3. 搭建静态博客1234$ hexo init blog_namecd blog_name$ npm install$ hexo server  # 生成静态文件，启动本地服务器 4. 写博客1234$ hexo new article# 使用markdown编辑器编辑$ hexo generat">
 
 
 
@@ -361,25 +361,14 @@
       
 
       
-        <h3>环境准备</h3>
-<h5>1. 安装Node.js</h5>
-<h5>2. 安装hexo</h5>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure></p>
-<p>#####3. 搭建静态博客
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init blog_name</span><br><span class="line">cd blog_name</span><br><span class="line">$ npm install</span><br><span class="line">$ hexo server  <span class="comment"># 生成静态文件，启动本地服务器</span></span><br></pre></td></tr></table></figure></p>
-<p>#####4. 写博客
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new article</span><br><span class="line"><span class="comment"># 使用markdown编辑器编辑</span></span><br><span class="line">$ hexo generate     <span class="comment">#生成静态文件</span></span><br><span class="line">$ hexo server       <span class="comment">#本地看效果</span></span><br></pre></td></tr></table></figure></p>
-<p>#####5. 部署到github
-编辑_config.yml，添加github仓库地址，添加如下信息
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/deployment.html</span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/$username/$username.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p>
-<p>添加Git部署所依赖的库 hexo-deployer-git
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure></p>
-<p>添加.gitignore文件，忽略不必要的文件
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.DS_Store</span><br><span class="line">Thumbs.db</span><br><span class="line">db.json</span><br><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">public/</span><br><span class="line">.deploy*/</span><br></pre></td></tr></table></figure></p>
-<p>初始化仓库，并添加github远程源
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd blog_name</span><br><span class="line">$ git init</span><br><span class="line">$ git add .</span><br><span class="line">$ git commit -m &quot;blog&quot; # 提交</span><br><span class="line">$ git remote add origin https://github.com/$username/$username.github.io.git # 添加远程源</span><br></pre></td></tr></table></figure></p>
-<p>部署到Github上
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure></p>
+        <h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><h5 id="1-安装Node-js"><a href="#1-安装Node-js" class="headerlink" title="1. 安装Node.js"></a>1. 安装Node.js</h5><h5 id="2-安装hexo"><a href="#2-安装hexo" class="headerlink" title="2. 安装hexo"></a>2. 安装hexo</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+<h5 id="3-搭建静态博客"><a href="#3-搭建静态博客" class="headerlink" title="3. 搭建静态博客"></a>3. 搭建静态博客</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init blog_name</span><br><span class="line">cd blog_name</span><br><span class="line">$ npm install</span><br><span class="line">$ hexo server  <span class="comment"># 生成静态文件，启动本地服务器</span></span><br></pre></td></tr></table></figure>
+<h5 id="4-写博客"><a href="#4-写博客" class="headerlink" title="4. 写博客"></a>4. 写博客</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new article</span><br><span class="line"><span class="comment"># 使用markdown编辑器编辑</span></span><br><span class="line">$ hexo generate     <span class="comment">#生成静态文件</span></span><br><span class="line">$ hexo server       <span class="comment">#本地看效果</span></span><br></pre></td></tr></table></figure>
+<h5 id="5-部署到github"><a href="#5-部署到github" class="headerlink" title="5. 部署到github"></a>5. 部署到github</h5><p>编辑_config.yml，添加github仓库地址，添加如下信息<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/deployment.html</span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/$username/$username.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p>
+<p>添加Git部署所依赖的库 hexo-deployer-git<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure></p>
+<p>添加.gitignore文件，忽略不必要的文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.DS_Store</span><br><span class="line">Thumbs.db</span><br><span class="line">db.json</span><br><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">public/</span><br><span class="line">.deploy*/</span><br></pre></td></tr></table></figure></p>
+<p>初始化仓库，并添加github远程源<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd blog_name</span><br><span class="line">$ git init</span><br><span class="line">$ git add .</span><br><span class="line">$ git commit -m &quot;blog&quot; # 提交</span><br><span class="line">$ git remote add origin https://github.com/$username/$username.github.io.git # 添加远程源</span><br></pre></td></tr></table></figure></p>
+<p>部署到Github上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -495,7 +484,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -520,7 +509,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -556,7 +547,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.0.1.</span> <span class="nav-text">1. 安装Node.js</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.0.2.</span> <span class="nav-text">2. 安装hexo</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#环境准备"><span class="nav-number">1.</span> <span class="nav-text">环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-安装Node-js"><span class="nav-number">1.0.1.</span> <span class="nav-text">1. 安装Node.js</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-安装hexo"><span class="nav-number">1.0.2.</span> <span class="nav-text">2. 安装hexo</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-搭建静态博客"><span class="nav-number">1.0.3.</span> <span class="nav-text">3. 搭建静态博客</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-写博客"><span class="nav-number">1.0.4.</span> <span class="nav-text">4. 写博客</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-部署到github"><span class="nav-number">1.0.5.</span> <span class="nav-text">5. 部署到github</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
