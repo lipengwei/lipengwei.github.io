@@ -108,20 +108,20 @@
 
 
 
-  <meta name="description" content="反向传播 举个例子  第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。 1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w">
+  <meta name="description" content="反向传播举个例子第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w3=0.">
 <meta name="keywords" content="BP,GD">
 <meta property="og:type" content="article">
 <meta property="og:title" content="反向传播与梯度下降">
 <meta property="og:url" content="http://lipengwei.github.io/2018/08/01/反向传播与梯度下降/index.html">
 <meta property="og:site_name" content="李鹏伟的技术博客">
-<meta property="og:description" content="反向传播 举个例子  第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。 1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w">
+<meta property="og:description" content="反向传播举个例子第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w3=0.">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://lipengwei.github.io/images/bp.png">
 <meta property="og:image" content="http://lipengwei.github.io/images/gd.png">
 <meta property="og:updated_time" content="2018-08-03T07:11:28.668Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="反向传播与梯度下降">
-<meta name="twitter:description" content="反向传播 举个例子  第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。 1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w">
+<meta name="twitter:description" content="反向传播举个例子第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。1234其中，输入数据  i1=0.05，i2=0.10;输出数据        o1=0.01,o2=0.99;　　初始权重  w1=0.15,w2=0.20,w3=0.">
 <meta name="twitter:image" content="http://lipengwei.github.io/images/bp.png">
 
 
@@ -376,76 +376,26 @@
       
 
       
-        <h2>反向传播</h2>
-<h3>举个例子</h3>
-<p><img src="/images/bp.png" alt="BP">
-第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">其中，输入数据  i1=0.05，i2=0.10;</span><br><span class="line">输出数据        o1=0.01,o2=0.99;</span><br><span class="line">　　初始权重  w1=0.15,w2=0.20,w3=0.25,w4=0.30;</span><br><span class="line">          w5=0.40,w6=0.45,w7=0.50,w8=0.55</span><br></pre></td></tr></table></figure></p>
-<p>目标：给出输入数据i1,i2(0.05和0.10)，使输出尽可能与原始输出o1,o2(0.01和0.99)接近。</p>
-<h3>1.前向传播（输入层-隐含层）</h3>
-<p>计算神经元h1的输入加权和：
-$$ out_{h_{i}}=\sigma(w_{i}*i_{i} + w_{i}*i_{i} + b_{i}*1) $$
-则计算结果分别为：
-$$out_{h1}=0.593269 $$  $$out_{h2}=0.596884 $$</p>
-<h3>前向传播（隐含层-输出层）</h3>
-<p>同样的方法$$ out_{o_{j}}=\sigma(w_{j}*out_{h_{j1}} + w_{j}*out_{h_{j2}} + b_{j}*1) $$
-则计算结果为：
-$$out_{o1}=0.751365 $$  $$out_{o2}=0.772928 $$
-这样前向传播的过程就结束了，我们得到输出值为[0.751365, 0.772928]，与实际值[0.01， 0.99]相差还很远，现在我们对误差进行反向传播，更新权值，重新计算输出。</p>
-<h3>2.反向传播</h3>
-<h4>计算总误差(均方误差)</h4>
-<p>$$ E_{total} = \sum\frac{1}{2}(target-output)^{2} $$所以$$E_{total}=E_{o1}+E_{o2}=0.274811+0.023561 = 0.298371 $$</p>
-<h4>隐含层的权重更新</h4>
-<p>以权重$w_{5}$为例，如果我们想知道$w_{5}$对整体误差产生了多少影响，可以用整体误差对$w_{5}$求偏导求出（链式法则）：
-$$\frac{\partial E_{ total}}{\partial w_{5}}=\frac{\partial E_{total}}{\partial out_{w_{5}}}*\frac{\partial out_{w_{5}}}{\partial w_{5}}$$
-接下来是复合函数求导，先对sigmoid求导，在对$w_{5}$求导。最终我们得到的结果是：
-$$\frac{\partial E_{ total}}{\partial w_{5}}=-(target_{o1}-out_{o1})<em>out_{o1}(1-out_{o1})<em>out_{h1}$$总结一下就是：误差</em>激活函数梯度</em>上一层的输出值,为了表示方便，我们用$\delta_{o1}$来表示输出层的误差，$$ \delta_{o1} = -(target_{o1}-out_{o1})*out_{o1}(1-out_{o1}) $$ $$ \frac{\partial E_{ total}}{\partial w_{5}}=\delta_{o1}<em>out_{h1} $$
-最后我们来更新$w_{5}$的值：$$ w_{5}^{+} = w_{5} - \eta\frac{\partial E_{ total}}{\partial w_{5}}=0.4-0.01</em>0.082167=0.358916 $$这里$\eta=0.01$，表示学习率，同理，可以更新所有的$w$值。
-<img src="/images/gd.png" alt="GD">
-重复迭代次数可以使得总误差越来越接近真实值。</p>
-<h2>梯度下降</h2>
-<h3>1.先做一道数学题</h3>
-<p>用最速下降法求解无约束非线性规划问题，$$ minf(X)= x_{1}-x_{2}+2x_{1}^{2}+2x_{1}x_{2}+x_{2}^{2} $$,其中$X=(x_{1},x_{x2})^\mathrm{T}$，要求选取初始点$X^{1}=(0,0)^\mathrm{T}$，终止误差$\varepsilon=0.5$
-解：目标函数的梯度$\nabla f(x)=\begin{bmatrix}
-\frac{\partial f(x)}{\partial x_{1}}    \
-\frac{\partial f(x)}{\partial x_{2}}
-\end{bmatrix} = \begin{bmatrix}
-1+4x_{1}+2x_{2}    \
--1+2x_{1}+2x_{2}
-\end{bmatrix}$,
-$\nabla f(X^{1})=\begin{bmatrix}
-1    \
--1
-\end{bmatrix}$令搜索方向$d^{1}=-\nabla f(x^{1})$,再从$X^{1}$出发，沿着$d^{1}$方向作一维寻优，令步长变量为$\lambda$,最优步长为$\lambda_{1}$,则有$$ X^{1}+\lambda d^{1}= \begin{bmatrix}
-0    \
+        <h2 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h2><h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p><img src="/images/bp.png" alt="BP"><br>第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">其中，输入数据  i1=0.05，i2=0.10;</span><br><span class="line">输出数据        o1=0.01,o2=0.99;</span><br><span class="line">　　初始权重  w1=0.15,w2=0.20,w3=0.25,w4=0.30;</span><br><span class="line">          w5=0.40,w6=0.45,w7=0.50,w8=0.55</span><br></pre></td></tr></table></figure></p>
+<p>　　目标：给出输入数据i1,i2(0.05和0.10)，使输出尽可能与原始输出o1,o2(0.01和0.99)接近。</p>
+<h3 id="1-前向传播（输入层-隐含层）"><a href="#1-前向传播（输入层-隐含层）" class="headerlink" title="1.前向传播（输入层-隐含层）"></a>1.前向传播（输入层-隐含层）</h3><p>计算神经元h1的输入加权和：</p>
+<script type="math/tex; mode=display">out_{h_{i}}=\sigma(w_{i}*i_{i} + w_{i}*i_{i} + b_{i}*1)</script><p>则计算结果分别为：</p>
+<script type="math/tex; mode=display">out_{h1}=0.593269 $$  $$out_{h2}=0.596884</script><h3 id="前向传播（隐含层-输出层）"><a href="#前向传播（隐含层-输出层）" class="headerlink" title="前向传播（隐含层-输出层）"></a>前向传播（隐含层-输出层）</h3><p>同样的方法<script type="math/tex">out_{o_{j}}=\sigma(w_{j}*out_{h_{j1}} + w_{j}*out_{h_{j2}} + b_{j}*1)</script><br>则计算结果为：</p>
+<script type="math/tex; mode=display">out_{o1}=0.751365 $$  $$out_{o2}=0.772928</script><p>这样前向传播的过程就结束了，我们得到输出值为[0.751365, 0.772928]，与实际值[0.01， 0.99]相差还很远，现在我们对误差进行反向传播，更新权值，重新计算输出。</p>
+<h3 id="2-反向传播"><a href="#2-反向传播" class="headerlink" title="2.反向传播"></a>2.反向传播</h3><h4 id="计算总误差-均方误差"><a href="#计算总误差-均方误差" class="headerlink" title="计算总误差(均方误差)"></a>计算总误差(均方误差)</h4><script type="math/tex; mode=display">E_{total} = \sum\frac{1}{2}(target-output)^{2} $$所以$$E_{total}=E_{o1}+E_{o2}=0.274811+0.023561 = 0.298371</script><h4 id="隐含层的权重更新"><a href="#隐含层的权重更新" class="headerlink" title="隐含层的权重更新"></a>隐含层的权重更新</h4><p>以权重$w<em>{5}$为例，如果我们想知道$w</em>{5}$对整体误差产生了多少影响，可以用整体误差对$w_{5}$求偏导求出（链式法则）：</p>
+<script type="math/tex; mode=display">\frac{\partial E_{ total}}{\partial w_{5}}=\frac{\partial E_{total}}{\partial out_{w_{5}}}*\frac{\partial out_{w_{5}}}{\partial w_{5}}</script><p>接下来是复合函数求导，先对sigmoid求导，在对$w_{5}$求导。最终我们得到的结果是：</p>
+<script type="math/tex; mode=display">\frac{\partial E_{ total}}{\partial w_{5}}=-(target_{o1}-out_{o1})*out_{o1}(1-out_{o1})*out_{h1}$$总结一下就是：误差*激活函数梯度*上一层的输出值,为了表示方便，我们用$\delta_{o1}$来表示输出层的误差，$$ \delta_{o1} = -(target_{o1}-out_{o1})*out_{o1}(1-out_{o1}) $$ $$ \frac{\partial E_{ total}}{\partial w_{5}}=\delta_{o1}*out_{h1}</script><p>最后我们来更新$w<em>{5}$的值：$$ w</em>{5}^{+} = w<em>{5} - \eta\frac{\partial E</em>{ total}}{\partial w_{5}}=0.4-0.01*0.082167=0.358916 $$这里$\eta=0.01$，表示学习率，同理，可以更新所有的$w$值。<br><img src="/images/gd.png" alt="GD"><br>重复迭代次数可以使得总误差越来越接近真实值。</p>
+<h2 id="梯度下降"><a href="#梯度下降" class="headerlink" title="梯度下降"></a>梯度下降</h2><h3 id="1-先做一道数学题"><a href="#1-先做一道数学题" class="headerlink" title="1.先做一道数学题"></a>1.先做一道数学题</h3><p>用最速下降法求解无约束非线性规划问题，<script type="math/tex">minf(X)= x_{1}-x_{2}+2x_{1}^{2}+2x_{1}x_{2}+x_{2}^{2}</script>,其中$X=(x<em>{1},x</em>{x2})^\mathrm{T}$，要求选取初始点$X^{1}=(0,0)^\mathrm{T}$，终止误差$\varepsilon=0.5$<br>解：目标函数的梯度$\nabla f(x)=\begin{bmatrix}<br>\frac{\partial f(x)}{\partial x<em>{1}}    \<br>\frac{\partial f(x)}{\partial x</em>{2}}<br>\end{bmatrix} = \begin{bmatrix}<br>1+4x<em>{1}+2x</em>{2}    \<br>-1+2x<em>{1}+2x</em>{2}<br>\end{bmatrix}$,<br>$\nabla f(X^{1})=\begin{bmatrix}<br>1    \<br>-1<br>\end{bmatrix}$令搜索方向$d^{1}=-\nabla f(x^{1})$,再从$X^{1}$出发，沿着$d^{1}$方向作一维寻优，令步长变量为$\lambda$,最优步长为$\lambda<em>{1}$,则有<script type="math/tex">X^{1}+\lambda d^{1}= \begin{bmatrix}
+0    \\
 0
 \end{bmatrix} + \lambda \begin{bmatrix}
--1    \
+-1    \\
 1
 \end{bmatrix}=\begin{bmatrix}
--\lambda    \
-\lambda
-\end{bmatrix}$$, 故有$f(x)=f(X^{1}+\lambda d^{1})=(-\lambda)-\lambda + 2(-\lambda)^2+2(-\lambda)\lambda + \lambda ^{2}=\lambda ^{2}-2\lambda=\varphi_{1}(\lambda)$,令$\varphi_{1}(\lambda)=0$可得，$\lambda_{1}=1$,则$X^{2}=X^{1}+\lambda_{1}d^{1}=\begin{bmatrix}
--1    \
-1
-\end{bmatrix}$,求出$X^{2}$之后，与上类似地，进行第二次迭代：$\nabla f(X^{2})= \begin{bmatrix}
--1    \
-1
-\end{bmatrix}$，令$d^{2}=-\nabla f(X^{2})$，令步长变量为$\lambda$，求出最优步长$\lambda_{2}$，固有$f(x)=f(X^{2}+\lambda d^{2})=0$,求得$\lambda_{2}=\frac{1}{5}$,
-同理：$X^{3}=X^{2}+\lambda_{2}d^{2}=\begin{bmatrix}
--0.8    \
-1.2
-\end{bmatrix}$,此时$\nabla f(X^{3})=\begin{bmatrix}
-0.2    \
--0.2
-\end{bmatrix}$,此时所达到的精度$\begin{Vmatrix}
-\nabla f(X^{3})
-\end{Vmatrix}\approx 0.2828$,故此题的最优解$X^{<em>}=\begin{bmatrix}
--1    \
-1.5
-\end{bmatrix}$,$f(X^{</em>})=-1.25$</p>
-<h5>从上述题目中可以总结梯度下降法的一般迭代步骤：</h5>
-<blockquote>
+-\lambda    \\
+\lambda 
+\end{bmatrix}</script>, 故有$f(x)=f(X^{1}+\lambda d^{1})=(-\lambda)-\lambda + 2(-\lambda)^2+2(-\lambda)\lambda + \lambda ^{2}=\lambda ^{2}-2\lambda=\varphi</em>{1}(\lambda)$,令$\varphi<em>{1}(\lambda)=0$可得，$\lambda</em>{1}=1$,则$X^{2}=X^{1}+\lambda<em>{1}d^{1}=\begin{bmatrix}<br>-1    \<br>1<br>\end{bmatrix}$,求出$X^{2}$之后，与上类似地，进行第二次迭代：$\nabla f(X^{2})= \begin{bmatrix}<br>-1    \<br>1<br>\end{bmatrix}$，令$d^{2}=-\nabla f(X^{2})$，令步长变量为$\lambda$，求出最优步长$\lambda</em>{2}$，固有$f(x)=f(X^{2}+\lambda d^{2})=0$,求得$\lambda<em>{2}=\frac{1}{5}$,<br>同理：$X^{3}=X^{2}+\lambda</em>{2}d^{2}=\begin{bmatrix}<br>-0.8    \<br>1.2<br>\end{bmatrix}$,此时$\nabla f(X^{3})=\begin{bmatrix}<br>0.2    \<br>-0.2<br>\end{bmatrix}$,此时所达到的精度$\begin{Vmatrix}<br>\nabla f(X^{3})<br>\end{Vmatrix}\approx 0.2828$,故此题的最优解$X^{<em>}=\begin{bmatrix}<br>-1    \<br>1.5<br>\end{bmatrix}$,$f(X^{</em>})=-1.25$</p>
+<h5 id="从上述题目中可以总结梯度下降法的一般迭代步骤："><a href="#从上述题目中可以总结梯度下降法的一般迭代步骤：" class="headerlink" title="从上述题目中可以总结梯度下降法的一般迭代步骤："></a>从上述题目中可以总结梯度下降法的一般迭代步骤：</h5><blockquote>
 <ul>
 <li>先确定向下一步的步伐大小，我们称为Learning rate；</li>
 <li>任意给定一个初始值；</li>
@@ -454,19 +404,11 @@ $\nabla f(X^{1})=\begin{bmatrix}
 </ul>
 </blockquote>
 <p>更新初始值的方法：$\theta^{n+1}=\theta^{n}-\eta\nabla C(\theta^{n})$</p>
-<h3>2.梯度下降原理</h3>
-<p>导数的概念：$$ f'(x_{0})= \lim_{\Delta x \to 0}\frac{\Delta y}{\Delta x} = \lim_{\Delta x \to 0}\frac{f(x_{0}+\Delta x) - f(x_{0})}{\Delta x} $$，由公式可见，对点$x_{0}$的导数反应了函数在点$x_{0}$处的瞬时变化率，或者叫斜率，推广到多维函数中，就有了梯度的概念，梯度是一个向量组合，反映了多维图形中变化速率最快的方向。</p>
-<h2>补充（tensorflow中常用的优化算法API）</h2>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">tf.train.Optimizer</span><br><span class="line">tf.train.GradientDescentOptimizer</span><br><span class="line">tf.train.AdadeltaOptimizer</span><br><span class="line">tf.train.AdagradOptimizer</span><br><span class="line">tf.train.AdagradDAOptimizer</span><br><span class="line">tf.train.MomentumOptimizer</span><br><span class="line">tf.train.AdamOptimizer</span><br><span class="line">tf.train.FtrlOptimizer</span><br><span class="line">tf.train.ProximalGradientDescentOptimizer</span><br><span class="line">tf.train.ProximalAdagradOptimizer</span><br><span class="line">tf.train.RMSPropOptimizer</span><br></pre></td></tr></table></figure></p>
-<p>1、 tf.train.GradientDescentOptimizer
-这个优化器主要实现的是:梯度下降算法
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'GradientDescent'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>2、 tf.train.MomentumOptimizer
-实现动量梯度下降算法,可参考<a href="https://blog.csdn.net/yinruiyang94/article/details/77944338" target="_blank" rel="noopener"> 简述动量Momentum梯度下降</a>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    momentum,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Momentum'</span>,</span><br><span class="line">    use_nesterov=<span class="keyword">False</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>3、tf.train.AdamOptimizer
-实现 Adam优化算法（Adam 这个名字来源于 adaptive moment estimation，自适应矩估计。）可参考博客<a href="https://blog.csdn.net/zb1165048017/article/details/78392623" target="_blank" rel="noopener">梯度优化算法Adam</a>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate=<span class="number">0.001</span>,</span><br><span class="line">    beta1=<span class="number">0.9</span>,</span><br><span class="line">    beta2=<span class="number">0.999</span>,</span><br><span class="line">    epsilon=<span class="number">1e-08</span>,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Adam'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-梯度下降原理"><a href="#2-梯度下降原理" class="headerlink" title="2.梯度下降原理"></a>2.梯度下降原理</h3><p>导数的概念：<script type="math/tex">f'(x_{0})= \lim_{\Delta x \to 0}\frac{\Delta y}{\Delta x} = \lim_{\Delta x \to 0}\frac{f(x_{0}+\Delta x) - f(x_{0})}{\Delta x}</script>，由公式可见，对点$x<em>{0}$的导数反应了函数在点$x</em>{0}$处的瞬时变化率，或者叫斜率，推广到多维函数中，就有了梯度的概念，梯度是一个向量组合，反映了多维图形中变化速率最快的方向。</p>
+<h2 id="补充（tensorflow中常用的优化算法API）"><a href="#补充（tensorflow中常用的优化算法API）" class="headerlink" title="补充（tensorflow中常用的优化算法API）"></a>补充（tensorflow中常用的优化算法API）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">tf.train.Optimizer</span><br><span class="line">tf.train.GradientDescentOptimizer</span><br><span class="line">tf.train.AdadeltaOptimizer</span><br><span class="line">tf.train.AdagradOptimizer</span><br><span class="line">tf.train.AdagradDAOptimizer</span><br><span class="line">tf.train.MomentumOptimizer</span><br><span class="line">tf.train.AdamOptimizer</span><br><span class="line">tf.train.FtrlOptimizer</span><br><span class="line">tf.train.ProximalGradientDescentOptimizer</span><br><span class="line">tf.train.ProximalAdagradOptimizer</span><br><span class="line">tf.train.RMSPropOptimizer</span><br></pre></td></tr></table></figure>
+<p>1、 tf.train.GradientDescentOptimizer<br>这个优化器主要实现的是:梯度下降算法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'GradientDescent'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>2、 tf.train.MomentumOptimizer<br>实现动量梯度下降算法,可参考<a href="https://blog.csdn.net/yinruiyang94/article/details/77944338" target="_blank" rel="noopener"> 简述动量Momentum梯度下降</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    momentum,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Momentum'</span>,</span><br><span class="line">    use_nesterov=<span class="keyword">False</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>3、tf.train.AdamOptimizer<br> 实现 Adam优化算法（Adam 这个名字来源于 adaptive moment estimation，自适应矩估计。）可参考博客<a href="https://blog.csdn.net/zb1165048017/article/details/78392623" target="_blank" rel="noopener">梯度优化算法Adam</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate=<span class="number">0.001</span>,</span><br><span class="line">    beta1=<span class="number">0.9</span>,</span><br><span class="line">    beta2=<span class="number">0.999</span>,</span><br><span class="line">    epsilon=<span class="number">1e-08</span>,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Adam'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -582,7 +524,7 @@ $\nabla f(X^{1})=\begin{bmatrix}
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -609,7 +551,9 @@ $\nabla f(X^{1})=\begin{bmatrix}
                     
                       
                     
-                    <span class="site-state-item-count">6</span>
+                      
+                    
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -645,7 +589,7 @@ $\nabla f(X^{1})=\begin{bmatrix}
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">反向传播</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.1.</span> <span class="nav-text">举个例子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.</span> <span class="nav-text">1.前向传播（输入层-隐含层）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.3.</span> <span class="nav-text">前向传播（隐含层-输出层）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.</span> <span class="nav-text">2.反向传播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.1.</span> <span class="nav-text">计算总误差(均方误差)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.2.</span> <span class="nav-text">隐含层的权重更新</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">梯度下降</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">1.先做一道数学题</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.0.1.</span> <span class="nav-text">从上述题目中可以总结梯度下降法的一般迭代步骤：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">2.梯度下降原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">补充（tensorflow中常用的优化算法API）</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#反向传播"><span class="nav-number">1.</span> <span class="nav-text">反向传播</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#举个例子"><span class="nav-number">1.1.</span> <span class="nav-text">举个例子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-前向传播（输入层-隐含层）"><span class="nav-number">1.2.</span> <span class="nav-text">1.前向传播（输入层-隐含层）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前向传播（隐含层-输出层）"><span class="nav-number">1.3.</span> <span class="nav-text">前向传播（隐含层-输出层）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-反向传播"><span class="nav-number">1.4.</span> <span class="nav-text">2.反向传播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#计算总误差-均方误差"><span class="nav-number">1.4.1.</span> <span class="nav-text">计算总误差(均方误差)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#隐含层的权重更新"><span class="nav-number">1.4.2.</span> <span class="nav-text">隐含层的权重更新</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#梯度下降"><span class="nav-number">2.</span> <span class="nav-text">梯度下降</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-先做一道数学题"><span class="nav-number">2.1.</span> <span class="nav-text">1.先做一道数学题</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#从上述题目中可以总结梯度下降法的一般迭代步骤："><span class="nav-number">2.1.0.1.</span> <span class="nav-text">从上述题目中可以总结梯度下降法的一般迭代步骤：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-梯度下降原理"><span class="nav-number">2.2.</span> <span class="nav-text">2.梯度下降原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充（tensorflow中常用的优化算法API）"><span class="nav-number">3.</span> <span class="nav-text">补充（tensorflow中常用的优化算法API）</span></a></li></ol></div>
             
 
           </div>

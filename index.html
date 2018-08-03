@@ -280,6 +280,225 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/03/CNN多标签分类实战/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="李鹏伟">
+      <meta itemprop="description" content="AI">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李鹏伟的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/03/CNN多标签分类实战/" itemprop="url">
+                  CNN多标签分类实战
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-03 23:10:12 / 修改时间：21:18:55" itemprop="dateCreated datePublished" datetime="2018-08-03T23:10:12+08:00">2018-08-03</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>图像分类已经领域，深度学习方法已经超越了人类，其中google公开的Inception模型在图像分类大赛上取得了比人类识别还要低的错误率。研究已经成功的模型对我们学习也有很大的帮助，今天我们使用Inception模型作为预训练，我做我们的多便签图片分类任务。</p>
+<h2>Inception模型</h2>
+<p>获得高质量模型最保险的做法是增加模型深度或者是其宽度，但是会出现很多缺陷：参数过多，过拟合，计算复杂度高，梯度易消失，难以优化。Inception架构的主要思想是找出如何用<em>密集成分来近似最优的局部稀疏连接</em>
+<img src="/images/inception1.png" alt="Inception">
+对图加以说明：</p>
+<blockquote>
+<ul>
+<li>采用不同大小的卷积核，意味着不同大小的感受野，最后意味着不同尺度特征的融合</li>
+<li>之所以卷积核大小采用1<em>1,3</em>3,5*5，主要是为了方便对齐，设定stride=1之后，只要分别设定padding=0、1、2，采用same卷积可以得到相同维度的特征，然后拼接在一起</li>
+<li>文章说pooling层很有效，所以Inception里面加了pooling</li>
+<li>网络越到后面越抽象，感受野也更大，所以3<em>3,5</em>5卷积的比例也要增加</li>
+</ul>
+</blockquote>
+<p>Inception的作用：代替人工确定卷积层中过滤器类型或者确定是否需要创建卷积层和池化层，都由网络自行决定，自己学习参数。</p>
+<p>Inception的缺陷：计算成本高，使用5<em>5的卷积核仍然会带来巨大的计算量，约需要1.2亿次的计算量
+<img src="/images/inception2.png" alt="inception2">
+为了减少计算成本，采用1</em>1卷积核来进行降维，如图
+<img src="/images/inception3.png" alt="inception3">
+在3<em>3和5</em>5的过滤器前面、max pooling后分别加上1<em>1的卷积核，最后将他们全部以通道/厚度 为轴拼接起来，最终输出大小是28</em>28*256，卷积的参数比原来少了4倍，得到最终的Inception模块：
+<img src="/images/inception4.png" alt="inception4"></p>
+<h2>GoogLeNet介绍</h2>
+<h3>1.googLeNet----Inception V1结构</h3>
+<p><img src="/images/inception5.png" alt="inception5">
+对图做如下说明：</p>
+<blockquote>
+<ul>
+<li>采用了9个Inception模块化结构，共计22层，方便增添修改</li>
+<li>网络层最后采用了average pooling来替代全连接层</li>
+<li>虽然移除了全连接层，但是网络中依然使用了dropout</li>
+<li>为了避免梯度消失，网络增加了2个辅助的softmax用于向前传导梯度，文章说这两个辅助的分类器loss应该加一个衰减系数，此外，实际测试的时候，这两个额外的softmax会被去掉</li>
+</ul>
+</blockquote>
+<h3>2.Inception V2结构</h3>
+<p>大尺寸的卷积核可以带来更大的感受野，也意味着更多的参数，比如5*5卷积核参数是3*3卷积核的25/9=2.78倍。为此，作者提出了2个连续的3*3卷积层（stride=1）组成的小网络来代替单个5*5卷积层，这就是Inception V2结构。保持感受野范围的同时又减少了参数量（25/18）。
+<img src="/images/inception6.png" alt="inception6">
+其实V2结构主要是学习了VGG的结构，用两个3*3的卷积代替5*5的大卷积（降低参数并减轻过拟合），还提出了著名了<a href="https://lipengwei.github.io/2018/08/03/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E8%B0%83%E5%8F%82%E4%B8%8E%E4%BC%98%E5%8C%96/">Batch Normalization(BN)</a>方法。使得Inception V2在训练达到Inception V1的准确率时快了14倍，并且模型在收敛时的准确率上限更高。</p>
+<h3>3.Inception V3结构</h3>
+<p>大卷积核完全可以由一系列的3*3卷积核来替代，那能不能分解的更小一点呢，V3考虑n*1卷积核，于是，任意n*n的卷积都可以通过1*n卷积后接n*1卷积来替代，实际上，作者发现在网络前期使用这种分解效果并不好，在有中度大小的feature map上使用效果才好，所以中度大小的feature map的大小最好在12-20之间。
+<img src="/images/inception7.png" alt="inception7">
+Inception V3主要在两方面做了改进，一是引入了Factorization into small convolutions的思想，将一个较大的二维卷积拆成两个较小的一维卷积。令一方面，Inception V3 优化了 Inception Module 的结构，现在 Inception Module 有35*35、17*17和8*8三种不同结构。这些 Inception Module 只在网络的后部出现，前部还是普通的卷积层。并且 Inception V3 除了在 Inception Module 中使用分支，还在分支中使用了分支（8*8的结构中），可以说是Network In Network In Network。最终取得 top-5 错误率 3.5%。</p>
+<h3>4.Inception V4</h3>
+<p>Inception V4 相比 V3 主要是结合了微软的 ResNet，将错误率进一步减少到 3.08%。</p>
+<p>深度残差网络。如果深层网络的后面那些层是恒等映射，那么模型就退化为一个浅层网络。那当前要解决的就是学习恒等映射函数了。但是直接让一些层去拟合一个潜在的恒等映射函数 $ H(x) = x  $，比较困难，这可能就是深层网络难以训练的原因，但是如果把网络设计为 $ H(x) = F(x) + x $。
+<img src="/images/resnet.png" alt="resNet">
+如图，我们可以转换为学习一个残差函数 $ F(x) = H(x) - x $，只要 $ F(x) = 0 $，就构成一个恒等映射 $ H(x) = x $。而且你和残差肯定更容易。
+<img src="/images/inception_4.png" alt="inception_4"></p>
+<h2>多标签分类</h2>
+<h3>1.数据集</h3>
+<p>数据集采用南京大学开源的数据集（http://lamda.nju.edu.cn/files/miml-image-data.rar），数据集中包含2000张图像，5类，分别为desert、mountains, sea, sunset,trees，每张图片有一个或多个标签。</p>
+<h3>2.数据处理</h3>
+<blockquote>
+<ul>
+<li>输入： image(299*299*3) - label (ont-hot [0,1,0,0,1])</li>
+<li>拆分为 train_data, test_data, train_label, test_label</li>
+<li>batch生成器，一次获取一个batch的数据</li>
+</ul>
+</blockquote>
+<h3>3.网络结构</h3>
+<p>我们使用Inception V3已经训练好的参数来做迁移训练
+<img src="/images/mu_label.png" alt="迁移训练">
+所有图片经过Inception V3结构，得到中间结果的2048个特征值，然后接自己设计的网络结构做图像5分类任务。网络结构如下图：
+<img src="/images/mu_label1.png" alt="mu_label1"></p>
+<h3>4.损失函数</h3>
+<p>不像单分类任务，使用softmax交叉熵，这里是多标签任务，我们需要使用sigmoid交叉熵作为loss函数。原因请参考这篇：<a href="https://lipengwei.github.io/2018/07/31/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B9%8Bloss/">机器学习之loss</a></p>
+<h3>5.结果</h3>
+<p><img src="/images/res1.png" alt="结果"></p>
+<h3>6.tensorboad</h3>
+<p><img src="/images/loss.png" alt="loss">
+<img src="/images/graph.png" alt="graph"></p>
+<h3>7.代码</h3>
+<p>代码已经上传到github。
+<a href="https://github.com/lipengwei/CNN_mutiple_label" target="_blank" rel="noopener">源代码</a></p>
+<h2>参考资料</h2>
+<blockquote>
+<ul>
+<li><a href="https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/examples/image_retraining/retrin.py" target="_blank" rel="noopener">官方retrain</a></li>
+<li><a href="https://blog.csdn.net/loveliuzz/article/details/79135583" target="_blank" rel="noopener">深度学习卷积神经网络——经典网络GoogLeNet(Inception V3)网络的搭建与实现</a></li>
+<li><a href="https://www.cnblogs.com/haiyang21/p/7243200.html" target="_blank" rel="noopener">CNN卷积神经网络_ GoogLeNet 之 Inception(V1-V4)</a></li>
+</ul>
+</blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/03/深度学习调参与优化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -367,8 +586,7 @@
         
           
             <p>一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。</p>
-<h3>提升模型性能的想法</h3>
-<blockquote>
+<h3 id="提升模型性能的想法"><a href="#提升模型性能的想法" class="headerlink" title="提升模型性能的想法"></a>提升模型性能的想法</h3><blockquote>
 <ul>
 <li>从数据上提升性能</li>
 <li>从算法上提升性能</li>
@@ -377,8 +595,7 @@
 </ul>
 </blockquote>
 <p>这些可能并不完整，但在深度学习领域，有时候往往只需一个方面能够得到提升，整个模型的结构就会好上很多。</p>
-<h3>1.从数据上提升性能</h3>
-<p>调整训练数据或是调整问题定义的方法，可能会带来巨大的效果改善</p>
+<h3 id="1-从数据上提升性能"><a href="#1-从数据上提升性能" class="headerlink" title="1.从数据上提升性能"></a>1.从数据上提升性能</h3><p>调整训练数据或是调整问题定义的方法，可能会带来巨大的效果改善</p>
 <blockquote>
 <ul>
 <li>收集更多的数据</li>
@@ -387,62 +604,43 @@
 <p>尽可能的收集数据，同时确保数据集的质量</p>
 <blockquote>
 <ul>
-<li>产生更多的数据（噪声点，图像平移，旋转）
-如果你的数据是数值型的向量，那么随机生成已有向量的变形向量。
-如果你的数据是图像，用已有的图像随机生成相似图像。
-可以使用生成模型来生成，也可以使用一些经验技巧。</li>
-<li>对数据做缩放
-使用神经网络模型的一条经验法宝就是：将数据缩放到激活函数的阈值范围。
-例如1.归一化到0 ~ 1, 2.归一化到-1 ~ 1, 3. 标准化</li>
-<li>对数据做变换
-与上一节的方法相关，但是需要更多的工作量。你必须真正了解所用到的数据。数据可视化，然后挑出异常值。先猜测每一列数据的分布</li>
-<li>特征选择
-神经网络受不相关数据的影响很小。它们会对此赋予一个趋近于0的权重，几乎忽略此特征对预测值的贡献。你是否可以移除训练数据的某些属性呢？我们有许多的特征选择方法和特征重要性方法来鉴别哪些特征可以保留，哪些特征需要移除。</li>
+<li>产生更多的数据（噪声点，图像平移，旋转）<br>如果你的数据是数值型的向量，那么随机生成已有向量的变形向量。<br>如果你的数据是图像，用已有的图像随机生成相似图像。<br>可以使用生成模型来生成，也可以使用一些经验技巧。</li>
+<li>对数据做缩放<br>使用神经网络模型的一条经验法宝就是：将数据缩放到激活函数的阈值范围。<br>例如1.归一化到0 ~ 1, 2.归一化到-1 ~ 1, 3. 标准化</li>
+<li>对数据做变换<br>与上一节的方法相关，但是需要更多的工作量。你必须真正了解所用到的数据。数据可视化，然后挑出异常值。先猜测每一列数据的分布</li>
+<li>特征选择<br>神经网络受不相关数据的影响很小。它们会对此赋予一个趋近于0的权重，几乎忽略此特征对预测值的贡献。你是否可以移除训练数据的某些属性呢？我们有许多的特征选择方法和特征重要性方法来鉴别哪些特征可以保留，哪些特征需要移除。</li>
 </ul>
 </blockquote>
-<h3>2.从算法上提升性能</h3>
-<p>机器学习总是与算法相关。所有的理论和数学知识都在描述从数据中学习决策过程的不同方法。以下是深度学习优化器，对比其中的优劣势，来选择合适的优化算法。</p>
-<h4>1.BGD(Batch Gradient Descent)</h4>
-<p>每次更新我们需要计算整个数据集的梯度，因此使用批量梯度下降进行优化时，计算速度很慢，而且对于不适合内存计算的数据将会非常棘手。批量梯度下降算法不允许我们实时更新模型$$\theta = \theta - \eta \nabla J(\theta)$$,但是BGD算法能确保收敛到凸平面的全局最优和非凸平面的局部最优。tensorflow中的接口是 <code>tf.train.GradientDescentOptimizer</code>,</p>
-<h4>2.SGD(Stochastic Gradient Descent)</h4>
-<p>随机梯度下降算法参数更新针对每一个样本$x_{i}$和$y_{i}$，批量梯度下降算法在大数据量时会产生大量的冗余计算，比如：每次针对相似样本都会重新计算。这种情况下，SGD算法每次只更新一次，因此SGD算法更快，适合做online。$$\theta = \theta - \eta \nabla J(\theta;x^{i},y^{i})$$,但SGD以高方差进行快速更新，会导致目标函数出现抖动情况。有两种情况：</p>
+<h3 id="2-从算法上提升性能"><a href="#2-从算法上提升性能" class="headerlink" title="2.从算法上提升性能"></a>2.从算法上提升性能</h3><p>机器学习总是与算法相关。所有的理论和数学知识都在描述从数据中学习决策过程的不同方法。以下是深度学习优化器，对比其中的优劣势，来选择合适的优化算法。</p>
+<h4 id="1-BGD-Batch-Gradient-Descent"><a href="#1-BGD-Batch-Gradient-Descent" class="headerlink" title="1.BGD(Batch Gradient Descent)"></a>1.BGD(Batch Gradient Descent)</h4><p>每次更新我们需要计算整个数据集的梯度，因此使用批量梯度下降进行优化时，计算速度很慢，而且对于不适合内存计算的数据将会非常棘手。批量梯度下降算法不允许我们实时更新模型<script type="math/tex">\theta = \theta - \eta \nabla J(\theta)</script>,但是BGD算法能确保收敛到凸平面的全局最优和非凸平面的局部最优。tensorflow中的接口是 <code>tf.train.GradientDescentOptimizer</code>,</p>
+<h4 id="2-SGD-Stochastic-Gradient-Descent"><a href="#2-SGD-Stochastic-Gradient-Descent" class="headerlink" title="2.SGD(Stochastic Gradient Descent)"></a>2.SGD(Stochastic Gradient Descent)</h4><p>随机梯度下降算法参数更新针对每一个样本$x<em>{i}$和$y</em>{i}$，批量梯度下降算法在大数据量时会产生大量的冗余计算，比如：每次针对相似样本都会重新计算。这种情况下，SGD算法每次只更新一次，因此SGD算法更快，适合做online。<script type="math/tex">\theta = \theta - \eta \nabla J(\theta;x^{i},y^{i})</script>,但SGD以高方差进行快速更新，会导致目标函数出现抖动情况。有两种情况：</p>
 <blockquote>
 <ul>
 <li>因为计算的抖动可以让梯度计算挑出局部最优，到达一个更好的最优点</li>
 <li>SGD会次因产生过拟合</li>
 </ul>
 </blockquote>
-<h4>3.MBGD(Min-batch Gradient Descent)</h4>
-<p>该算法有两个好处：</p>
+<h4 id="3-MBGD-Min-batch-Gradient-Descent"><a href="#3-MBGD-Min-batch-Gradient-Descent" class="headerlink" title="3.MBGD(Min-batch Gradient Descent)"></a>3.MBGD(Min-batch Gradient Descent)</h4><p>该算法有两个好处：</p>
 <blockquote>
 <ul>
 <li>减少参数更新的变化，可以带来更稳定的收敛</li>
 <li>可以充分利用矩阵优化，计算更高效</li>
 </ul>
 </blockquote>
-<p>但是Min-batch梯度下降不保证好的收敛性。$$\theta=\theta-\eta \nabla J(\theta;x^{(i;i+n)};y^{(i;i+n)})$$，n表示一次更新的数量。
-BGD、SGD、MBGD算法都需要预先设置学习率，并且整个模型计算过程都采用相同的学习率，这会带来一些问题。后面会写到学习率的调整策略。</p>
-<h4>4.Momentum（动量）</h4>
-<p>动量可以加速SGD算法的收敛速度，并且降低SGD算法收敛时的震荡。$$v_{t}=\lambda v_{t-1} + \eta \nabla J(\theta)$$ $$\theta = \theta - v_{t}$$，通过添加一个衰减因子到历史更新向量，并加上当前的更新向量。当梯度保持相同方向是，动量因子加速更新参数，而梯度方向改变时，动量因子能降低梯度更新速度。</p>
-<h4>5.Adagrad</h4>
-<p>Adagrad优化算法是一种自适应优化算法，针对高频特征更新步长较小，而低频特征更新较大。因此该算法适合应用在特征稀疏的场景。
-先前的算法对每一次参数更新都是采用同一个学习率，而Adagrad算法每一步采用不同的学习率进行更新。SGD算法调参公式：$$\theta_{t+1,i}=\theta_{t,i}-\eta g_{t,i}$$，Adagrad算法在每一步的计算时候，根据历史梯度对学习率进行修改：
-$$\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
-其中$ G_{t}=\sum_{i=0}^{t}(g^{i})^{2}$，Adagrad算法的主要优点是它避免了手动调整学习率的麻烦，大部分使用默认的0.01。Adagrad算法的主要缺点在于，其分母梯度的平方累加和，因为每次加入的都是一个正数，随着训练的进行，学习率将会变得无限小，此时算法将不能进行参数的迭代更新。</p>
-<h4>6.Adadelta</h4>
-<p>Adadelta算法是Adagrad算法的改进版，它主要解决了adagrad算法单调递减学习率的问题。通过约束历史梯度累加来替代累加所有历史梯度平方。这里通过在历史梯度上添加衰减因子，并通过迭代的方式来对当前的梯度进行计算，最终距离较远的梯度对当前的影响较小，而距离当前时刻较近的梯度对当前梯度的计算影响较大。</p>
-<h4>7.RMDprop</h4>
-<p>RMSPprop算法和adadelta算法都是adagrad算法的优化版，用于解决adagrad算法学习率消失的问题，从最终的计算公式来看，RMSProp算法和Adadelta算法有相似的计算表达式:$$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\theta^{t+1}=\theta^{t}-\eta \frac{g^{t}}{\sqrt{r^{t} + \epsilon}}$$，一般情况下，$\rho=0.9$</p>
-<h4>8.Adam</h4>
-<p>Adam算法是另一种自适应参数更新算法。和Adadelta、RMSProp算法一样，对历史平方梯度$v^{t}$乘上一个衰减因子，adam算法还存储了一个历史梯度$r^{t}$。$$v^{t+1}=\lambda r^{t}+(1-\lambda)g^{t}$$    $$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\hat v^{t} = \frac{v^{t}}{1-\lambda}$$  $$\hat r^{t} = \frac{r^{t}}{1-\rho}$$ $$\theta^{t+1} = \theta^{t} - \eta \frac{\hat v^{t}}{\sqrt{\hat r^{t} + \epsilon}}$$</p>
-<h4>总结</h4>
-<p>当训练数据特征较为稀疏的时候，采用自适应的优化器通常能获得更好的性能，而且我们采用自适应优化器的默认值即可获得较优的性能。</p>
+<p>但是Min-batch梯度下降不保证好的收敛性。<script type="math/tex">\theta=\theta-\eta \nabla J(\theta;x^{(i;i+n)};y^{(i;i+n)})</script>，n表示一次更新的数量。<br>BGD、SGD、MBGD算法都需要预先设置学习率，并且整个模型计算过程都采用相同的学习率，这会带来一些问题。后面会写到学习率的调整策略。</p>
+<h4 id="4-Momentum（动量）"><a href="#4-Momentum（动量）" class="headerlink" title="4.Momentum（动量）"></a>4.Momentum（动量）</h4><p>动量可以加速SGD算法的收敛速度，并且降低SGD算法收敛时的震荡。<script type="math/tex">v_{t}=\lambda v_{t-1} + \eta \nabla J(\theta)</script> <script type="math/tex">\theta = \theta - v_{t}</script>，通过添加一个衰减因子到历史更新向量，并加上当前的更新向量。当梯度保持相同方向是，动量因子加速更新参数，而梯度方向改变时，动量因子能降低梯度更新速度。</p>
+<h4 id="5-Adagrad"><a href="#5-Adagrad" class="headerlink" title="5.Adagrad"></a>5.Adagrad</h4><p>Adagrad优化算法是一种自适应优化算法，针对高频特征更新步长较小，而低频特征更新较大。因此该算法适合应用在特征稀疏的场景。<br>先前的算法对每一次参数更新都是采用同一个学习率，而Adagrad算法每一步采用不同的学习率进行更新。SGD算法调参公式：<script type="math/tex">\theta_{t+1,i}=\theta_{t,i}-\eta g_{t,i}</script>，Adagrad算法在每一步的计算时候，根据历史梯度对学习率进行修改：</p>
+<script type="math/tex; mode=display">\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
+其中$ G_{t}=\sum_{i=0}^{t}(g^{i})^{2}$，Adagrad算法的主要优点是它避免了手动调整学习率的麻烦，大部分使用默认的0.01。Adagrad算法的主要缺点在于，其分母梯度的平方累加和，因为每次加入的都是一个正数，随着训练的进行，学习率将会变得无限小，此时算法将不能进行参数的迭代更新。
+#### 6.Adadelta
+Adadelta算法是Adagrad算法的改进版，它主要解决了adagrad算法单调递减学习率的问题。通过约束历史梯度累加来替代累加所有历史梯度平方。这里通过在历史梯度上添加衰减因子，并通过迭代的方式来对当前的梯度进行计算，最终距离较远的梯度对当前的影响较小，而距离当前时刻较近的梯度对当前梯度的计算影响较大。
+#### 7.RMDprop
+RMSPprop算法和adadelta算法都是adagrad算法的优化版，用于解决adagrad算法学习率消失的问题，从最终的计算公式来看，RMSProp算法和Adadelta算法有相似的计算表达式:$$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\theta^{t+1}=\theta^{t}-\eta \frac{g^{t}}{\sqrt{r^{t} + \epsilon}}$$，一般情况下，$\rho=0.9$
+#### 8.Adam
+Adam算法是另一种自适应参数更新算法。和Adadelta、RMSProp算法一样，对历史平方梯度$v^{t}$乘上一个衰减因子，adam算法还存储了一个历史梯度$r^{t}$。$$v^{t+1}=\lambda r^{t}+(1-\lambda)g^{t}$$    $$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\hat v^{t} = \frac{v^{t}}{1-\lambda}$$  $$\hat r^{t} = \frac{r^{t}}{1-\rho}$$ $$\theta^{t+1} = \theta^{t} - \eta \frac{\hat v^{t}}{\sqrt{\hat r^{t} + \epsilon}}</script><h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>当训练数据特征较为稀疏的时候，采用自适应的优化器通常能获得更好的性能，而且我们采用自适应优化器的默认值即可获得较优的性能。</p>
 <p>RMSprop算法是adagrad算法的优化版，它解决了学习率趋近于零的问题。Adadelta算法和RMSprop算法类似，区别在于Adadelta用参数的RMS作为更新规则的分子。最后，Adam则是在RMSprop的基础上加入了偏差校正和动量。综上来看，Adam可能是最佳的选择。</p>
 <p>所以，如果你想模型更快的收敛或者训练一个深层次、复杂度较高的网络，自适应的优化器应该是首选优化器。</p>
-<h3>3.从算法调优上提升性能</h3>
-<p>你通过算法筛选往往总能找出一到两个效果不错的算法。但想要达到这些算法的最佳状态需要耗费数日、数周甚至数月。下面是一些常用技巧，在调参时能有助于提升算法的性能。</p>
-<h4>1.数据集、验证集、测试集</h4>
-<p>只有知道为何模型的性能不再有提升了，才能达到最好的效果。一种快速查看模型性能的方法就是每一步计算模型在训练集和验证集上的表现，计算出在训练集和验证集上测试模型的准确率。</p>
+<h3 id="3-从算法调优上提升性能"><a href="#3-从算法调优上提升性能" class="headerlink" title="3.从算法调优上提升性能"></a>3.从算法调优上提升性能</h3><p>你通过算法筛选往往总能找出一到两个效果不错的算法。但想要达到这些算法的最佳状态需要耗费数日、数周甚至数月。下面是一些常用技巧，在调参时能有助于提升算法的性能。</p>
+<h4 id="1-数据集、验证集、测试集"><a href="#1-数据集、验证集、测试集" class="headerlink" title="1.数据集、验证集、测试集"></a>1.数据集、验证集、测试集</h4><p>只有知道为何模型的性能不再有提升了，才能达到最好的效果。一种快速查看模型性能的方法就是每一步计算模型在训练集和验证集上的表现，计算出在训练集和验证集上测试模型的准确率。</p>
 <blockquote>
 <ul>
 <li>如果训练集的效果好于验证集，说明可能存在过拟合的现象，试一试增加正则项。</li>
@@ -450,18 +648,15 @@ $$\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
 <li>如果训练集和验证集的曲线有一个焦点，可能需要用到early stopping的技巧了。</li>
 </ul>
 </blockquote>
-<h4>2.初始化权重</h4>
-<p>有一条经验规则：用小的随机数初始化权重。事实上，这可能已经足够了。还有几种可以尝试的策略：</p>
+<h4 id="2-初始化权重"><a href="#2-初始化权重" class="headerlink" title="2.初始化权重"></a>2.初始化权重</h4><p>有一条经验规则：用小的随机数初始化权重。事实上，这可能已经足够了。还有几种可以尝试的策略：</p>
 <blockquote>
 <ul>
-<li>尝试所有的初始化方法(全0，全1，正态高斯截断，glorot初始化等)
-参考这篇 <a href="http://deepdish.io/2015/02/24/network-initialization/" target="_blank" rel="noopener">深度网络模型的初始化</a></li>
+<li>尝试所有的初始化方法(全0，全1，正态高斯截断，glorot初始化等)<br>参考这篇 <a href="http://deepdish.io/2015/02/24/network-initialization/" target="_blank" rel="noopener">深度网络模型的初始化</a></li>
 <li>试一试用非监督式方法预学习，比如自动编码机</li>
 <li>迁移学习</li>
 </ul>
 </blockquote>
-<h4>3.学习率</h4>
-<p>调节学习率也能带来效果提升。策略如下：</p>
+<h4 id="3-学习率"><a href="#3-学习率" class="headerlink" title="3.学习率"></a>3.学习率</h4><p>调节学习率也能带来效果提升。策略如下：</p>
 <blockquote>
 <ul>
 <li>尝试非常大、非常小的学习率</li>
@@ -469,9 +664,7 @@ $$\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
 <li>尝试自适应学习率</li>
 </ul>
 </blockquote>
-<h4>4.激活函数</h4>
-<p>常用的激活函数有sigmoid,tanh,RelU,他们各有优缺点，可以都尝试一下：
-sigmoid特点：</p>
+<h4 id="4-激活函数"><a href="#4-激活函数" class="headerlink" title="4.激活函数"></a>4.激活函数</h4><p>常用的激活函数有sigmoid,tanh,RelU,他们各有优缺点，可以都尝试一下：<br>sigmoid特点：</p>
 <blockquote>
 <ul>
 <li>容易饱和，出现梯度消失，需要注意参数初始化方式来避免饱和</li>
@@ -492,8 +685,7 @@ sigmoid特点：</p>
 <li>存在硬饱和现象和偏移现象</li>
 </ul>
 </blockquote>
-<h4>5.网络结构</h4>
-<p>调整网络的拓扑结构也会有一些帮助。你需要设计多少个节点，需要几层网络呢？策略如下：</p>
+<h4 id="5-网络结构"><a href="#5-网络结构" class="headerlink" title="5.网络结构"></a>5.网络结构</h4><p>调整网络的拓扑结构也会有一些帮助。你需要设计多少个节点，需要几层网络呢？策略如下：</p>
 <blockquote>
 <ul>
 <li>试一试加一层有许多节点的隐层（拓宽）</li>
@@ -502,33 +694,22 @@ sigmoid特点：</p>
 <li>查看近期论文</li>
 </ul>
 </blockquote>
-<h4>6.batch和epoch</h4>
-<p>batch的大小决定了梯度值，以及权重更新的频率。一个epoch指的是训练集的所有样本都参与了一轮训练，以batch为序。你尝试过不同的batch大小和epoch的次数。</p>
-<h4>7.正则项</h4>
-<p>正则化是克服训练数据过拟合的好方法。有以下策略可以尝试：</p>
+<h4 id="6-batch和epoch"><a href="#6-batch和epoch" class="headerlink" title="6.batch和epoch"></a>6.batch和epoch</h4><p>batch的大小决定了梯度值，以及权重更新的频率。一个epoch指的是训练集的所有样本都参与了一轮训练，以batch为序。你尝试过不同的batch大小和epoch的次数。</p>
+<h4 id="7-正则项"><a href="#7-正则项" class="headerlink" title="7.正则项"></a>7.正则项</h4><p>正则化是克服训练数据过拟合的好方法。有以下策略可以尝试：</p>
 <blockquote>
 <ul>
-<li>增加L1正则项 ($C=C_{0}+\frac{\lambda}{n} \sum_{w}|w|$)
-L1正则项的作用时可以让一些权重为0，让权重矩阵稀疏</li>
-<li>增加L2正则项($C=C_{0}+\frac{\lambda}{2n} \sum_{w}w^{2} $)
-L2正则的作用时让权重值尽可能的小</li>
+<li>增加L1正则项 ($C=C<em>{0}+\frac{\lambda}{n} \sum</em>{w}|w|$)<br>L1正则项的作用时可以让一些权重为0，让权重矩阵稀疏</li>
+<li>增加L2正则项($C=C<em>{0}+\frac{\lambda}{2n} \sum</em>{w}w^{2} $)<br>L2正则的作用时让权重值尽可能的小</li>
 </ul>
 </blockquote>
 <p><img src="/images/l1l2.png" alt="L1与L2正则"></p>
 <blockquote>
 <ul>
-<li>增加dropout层。
-在一次循环中我们通过概率将神经层中的一些单元临时隐藏，然后再进行该次循环中神经网络的训练和优化过程。在训练时，每个神经单元以概率p被保留(dropout丢弃率为1-p)；在测试阶段，每个神经单元都是存在的，权重参数w要乘以p，成为：pw。<a href="https://www.cnblogs.com/makefile/p/dropout.html" target="_blank" rel="noopener">dropout详解</a></li>
-<li>增加BN层（Batch Normalization）
-BN算法通过对一个Batch的输出归一化。使得梯度始终在非饱和区。</li>
+<li>增加dropout层。<br>在一次循环中我们通过概率将神经层中的一些单元临时隐藏，然后再进行该次循环中神经网络的训练和优化过程。在训练时，每个神经单元以概率p被保留(dropout丢弃率为1-p)；在测试阶段，每个神经单元都是存在的，权重参数w要乘以p，成为：pw。<a href="https://www.cnblogs.com/makefile/p/dropout.html" target="_blank" rel="noopener">dropout详解</a></li>
+<li>增加BN层（Batch Normalization）<br>BN算法通过对一个Batch的输出归一化。使得梯度始终在非饱和区。</li>
 </ul>
 </blockquote>
-<p>看图理解BN：
-<img src="/images/bn1.png" alt="BN1">
-<img src="/images/bn1.png" alt="BN2">
-BN算法过程：
-<img src="/images/bn3.png" alt="BN3">
-BN的优点：</p>
+<p>看图理解BN：<br><img src="/images/bn1.png" alt="BN1"><br><img src="/images/bn1.png" alt="BN2"><br>BN算法过程：<br><img src="/images/bn3.png" alt="BN3"><br>BN的优点：</p>
 <blockquote>
 <ul>
 <li>你可以选择比较大的初始化学习率，因为BN算法学习率衰减的很快。</li>
@@ -536,8 +717,7 @@ BN的优点：</p>
 <li>不需要使用局部相应归一化层了(Alexnet网络用到的方法，CV)，因为BN本身就是一个归一化网络层</li>
 </ul>
 </blockquote>
-<h3>4.用融合方法提升效果</h3>
-<p>你可以将多个模型的预测结果融合。继模型调优之后，这是另一个大的提升领域。事实上，往往将几个效果还可以的模型的预测结果融合，取得的效果要比多个精细调优的模型分别预测的效果好。</p>
+<h3 id="4-用融合方法提升效果"><a href="#4-用融合方法提升效果" class="headerlink" title="4.用融合方法提升效果"></a>4.用融合方法提升效果</h3><p>你可以将多个模型的预测结果融合。继模型调优之后，这是另一个大的提升领域。事实上，往往将几个效果还可以的模型的预测结果融合，取得的效果要比多个精细调优的模型分别预测的效果好。</p>
 
           
         
@@ -691,33 +871,16 @@ BN的优点：</p>
           
             <p>深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。</p>
 <p>深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。</p>
-<h2>神经网络</h2>
-<h3>1.神经元</h3>
-<p><img src="/images/nn.png" alt="神经元">
-这其实就是一个单层感知集，其输入是由$x_{1},x_{2},x_{3}$和+1组成的向量，其输出为：$h_{W,b}(x)=f(W^\mathrm{T}x)=f( \sum_{i=1}^{3} W_{i}x_{i} + b )$，其中f是一个激活函数。</p>
-<h3>2.人工神经网络</h3>
-<p><img src="/images/nw.png" alt="人工神经网络">
-人工神经网络就是多个神经元的级联，上一神经元的输出事下一级神经元的输入，而且信号在两级的两个神经元之间传播的时候需要乘上这两个神经元对应的权值，层与层之间的神经元以全连接的方式连接在一起。
-其中包含一个输入层，一个或者多个影藏层，一个输出层，如果影藏层的层数大于1层的话，就可以称为深度神经网络(DNN)了。</p>
-<h3>3.异或问题</h3>
-<p><img src="/images/xor.png" alt="线性不可分">
-我们知道把向量做无限次的线性变换，依然是线性不可分的，所以我们要做一个非线性变换，就是在更高维的空间来做分类，神经网络是如何解决异或问题的呢？答案就是激活函数。
-<img src="/images/act.png" alt="激活函数">
-如图神经元：$\sum$ 就是做线性变换，对不同的输入进行求和、聚集，而$\sigma$ 做的就是非线性变换，将低维数据进行压缩、扭曲和变形，使其表达能力更强，表示更抽象。</p>
-<h3>4.万能近似定理（universal approximation）</h3>
-<p>万能近似定理（universal approximation theorem）(Hornik et al., 1989;Cybenko, 1989)：一个前馈神经网络如果具有线性输出层和至少一层具有任何一种“挤压”性质的激活函数（例如logistic sigmoid激活函数）的隐藏层，只要给予网络足够数量的隐藏hexo单元，它可以以任意的精度来近似任何从一个有限维空间到另一个有限维空间的Borel 可测函数。</p>
+<h2 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h2><h3 id="1-神经元"><a href="#1-神经元" class="headerlink" title="1.神经元"></a>1.神经元</h3><p><img src="/images/nn.png" alt="神经元"><br>这其实就是一个单层感知集，其输入是由$x<em>{1},x</em>{2},x<em>{3}$和+1组成的向量，其输出为：$h</em>{W,b}(x)=f(W^\mathrm{T}x)=f( \sum<em>{i=1}^{3} W</em>{i}x_{i} + b )$，其中f是一个激活函数。</p>
+<h3 id="2-人工神经网络"><a href="#2-人工神经网络" class="headerlink" title="2.人工神经网络"></a>2.人工神经网络</h3><p><img src="/images/nw.png" alt="人工神经网络"><br>人工神经网络就是多个神经元的级联，上一神经元的输出事下一级神经元的输入，而且信号在两级的两个神经元之间传播的时候需要乘上这两个神经元对应的权值，层与层之间的神经元以全连接的方式连接在一起。<br>其中包含一个输入层，一个或者多个影藏层，一个输出层，如果影藏层的层数大于1层的话，就可以称为深度神经网络(DNN)了。</p>
+<h3 id="3-异或问题"><a href="#3-异或问题" class="headerlink" title="3.异或问题"></a>3.异或问题</h3><p><img src="/images/xor.png" alt="线性不可分"><br>我们知道把向量做无限次的线性变换，依然是线性不可分的，所以我们要做一个非线性变换，就是在更高维的空间来做分类，神经网络是如何解决异或问题的呢？答案就是激活函数。<br><img src="/images/act.png" alt="激活函数"><br>如图神经元：$\sum$ 就是做线性变换，对不同的输入进行求和、聚集，而$\sigma$ 做的就是非线性变换，将低维数据进行压缩、扭曲和变形，使其表达能力更强，表示更抽象。</p>
+<h3 id="4-万能近似定理（universal-approximation）"><a href="#4-万能近似定理（universal-approximation）" class="headerlink" title="4.万能近似定理（universal approximation）"></a>4.万能近似定理（universal approximation）</h3><p>万能近似定理（universal approximation theorem）(Hornik et al., 1989;Cybenko, 1989)：一个前馈神经网络如果具有线性输出层和至少一层具有任何一种“挤压”性质的激活函数（例如logistic sigmoid激活函数）的隐藏层，只要给予网络足够数量的隐藏hexo单元，它可以以任意的精度来近似任何从一个有限维空间到另一个有限维空间的Borel 可测函数。</p>
 <p>有了万能近似框架，但是现实是我们没有万能的数据集与万能的优化函数来求的参数，还有可能因为过拟合而学习到了错误的函数。</p>
-<h3>5.softmax层</h3>
-<p><img src="/images/soft.png" alt="softmax层">
-softmax作为分类任务输出的最后一层，在很多网络结构中都用应用。原理与公式参考图示。</p>
-<h2>DNN</h2>
-<p>Dnn是深度学习的基础，Dnn其实就是隐藏层数比较多的一种神经网络，层与层之间都是全连接的。
-DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08/02/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E4%B8%8E%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">反向传播与梯度下降</a></p>
-<h3>1.DNN的思考</h3>
-<p>神经网络的结构越深，表达能力越强，泛化能力越好，那么如何能训练一个很深的神经网络？</p>
+<h3 id="5-softmax层"><a href="#5-softmax层" class="headerlink" title="5.softmax层"></a>5.softmax层</h3><p><img src="/images/soft.png" alt="softmax层"><br>softmax作为分类任务输出的最后一层，在很多网络结构中都用应用。原理与公式参考图示。</p>
+<h2 id="DNN"><a href="#DNN" class="headerlink" title="DNN"></a>DNN</h2><p>Dnn是深度学习的基础，Dnn其实就是隐藏层数比较多的一种神经网络，层与层之间都是全连接的。<br>DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08/02/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E4%B8%8E%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">反向传播与梯度下降</a></p>
+<h3 id="1-DNN的思考"><a href="#1-DNN的思考" class="headerlink" title="1.DNN的思考"></a>1.DNN的思考</h3><p>神经网络的结构越深，表达能力越强，泛化能力越好，那么如何能训练一个很深的神经网络？</p>
 <p>神经网络的优化算法是梯度下降，如何训练才能避免陷入检差的局部最优点？</p>
-<h3>2.神经网络的问题</h3>
-<p>1、梯度消失，网络结构很深的时候，每层反向传播都会乘上激活函数的梯度，而sigmoid函数的梯度最大值是1/4&lt;1,多次乘一个小于1的数会趋向0，所以梯度消失。解决方法有几种：</p>
+<h3 id="2-神经网络的问题"><a href="#2-神经网络的问题" class="headerlink" title="2.神经网络的问题"></a>2.神经网络的问题</h3><p>1、梯度消失，网络结构很深的时候，每层反向传播都会乘上激活函数的梯度，而sigmoid函数的梯度最大值是1/4&lt;1,多次乘一个小于1的数会趋向0，所以梯度消失。解决方法有几种：</p>
 <blockquote>
 <ul>
 <li>使用Relu作为激活函数</li>
@@ -726,8 +889,7 @@ DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08
 <li>使用预训练</li>
 </ul>
 </blockquote>
-<p>2、梯度爆炸
-在RNN中常会出现，因为反向传播过程中，state会共用W，所以会导致W会随着时间而连乘，如果W的值都大于1，则会梯度爆炸，如果小于1，则会梯度消失，解决梯度爆炸的方法是梯度裁剪，即，当梯度大于某一个阈值的时候，就强行将其限制在这个范围之内。RNN解决梯度消失的问题是采用LSTM作为基本单元。</p>
+<p>2、梯度爆炸<br>在RNN中常会出现，因为反向传播过程中，state会共用W，所以会导致W会随着时间而连乘，如果W的值都大于1，则会梯度爆炸，如果小于1，则会梯度消失，解决梯度爆炸的方法是梯度裁剪，即，当梯度大于某一个阈值的时候，就强行将其限制在这个范围之内。RNN解决梯度消失的问题是采用LSTM作为基本单元。</p>
 <p>3、过拟合</p>
 <blockquote>
 <ul>
@@ -745,71 +907,31 @@ DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08
 </blockquote>
 <p>5、优化函数，使用更高效的优化算法</p>
 <p>6、超参数的调整，学习率是认为设定的，使用自适应的学习率算法</p>
-<h2>CNN</h2>
-<p>为了减少学习参数和提取局部特征，CNN网络结构应运而生。CNN的主要特点是权值共享与局部连接，下面介绍CNN相较DNN的一些特点：</p>
-<h3>1.局部连接</h3>
-<p>我们都知道复杂的整体都是由简单的局部构成，那么如何提取到这些简单的局部特征呢？我们看下面这幅图
-<img src="/images/local.png" alt="局部连接">
-每个神经元只和其中3个神经元连接，那么较底层的神经元就提取到了较简单的局部信息，而月高层的神经元，就能提取到更复杂的特征。如下图更形象的解释了什么平面上的局部连接。
-<img src="/images/2Dlocal.png" alt="二维局部连接"></p>
-<h3>2.权值共享</h3>
-<p>CNN的权值共享说的是一个卷积核的权值在做卷积运算时是不变的，所以减少了参数个数</p>
-<h3>3.卷积与卷积核</h3>
-<p><img src="/images/cnn.gif" alt="卷积">
-卷积公式：$y(n)=\sum_{i=-\infty}^{+\infty} x(i)h(n-i)$
-tensorflow中接口：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tf.nn.conv2d(</span><br><span class="line">    input,     <span class="comment"># 输入</span></span><br><span class="line">    filter,    <span class="comment"># 卷积核，</span></span><br><span class="line">    strides,   <span class="comment"># 步长</span></span><br><span class="line">    padding,   <span class="comment"># ‘same’ 或者 'valid'</span></span><br><span class="line">    use_cudnn_on_gpu=<span class="keyword">True</span>,</span><br><span class="line">    data_format=<span class="string">'NHWC'</span>,</span><br><span class="line">    dilations=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>],</span><br><span class="line">    name=<span class="keyword">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>举个例子：
-考虑一种最简单的情况，现在有一张3×3单通道的图像（对应的shape：[1，3，3，1]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，最后会得到一张3×3的feature map。</p>
+<h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><p>为了减少学习参数和提取局部特征，CNN网络结构应运而生。CNN的主要特点是权值共享与局部连接，下面介绍CNN相较DNN的一些特点：</p>
+<h3 id="1-局部连接"><a href="#1-局部连接" class="headerlink" title="1.局部连接"></a>1.局部连接</h3><p>我们都知道复杂的整体都是由简单的局部构成，那么如何提取到这些简单的局部特征呢？我们看下面这幅图<br><img src="/images/local.png" alt="局部连接"><br>每个神经元只和其中3个神经元连接，那么较底层的神经元就提取到了较简单的局部信息，而月高层的神经元，就能提取到更复杂的特征。如下图更形象的解释了什么平面上的局部连接。<br><img src="/images/2Dlocal.png" alt="二维局部连接"></p>
+<h3 id="2-权值共享"><a href="#2-权值共享" class="headerlink" title="2.权值共享"></a>2.权值共享</h3><p>CNN的权值共享说的是一个卷积核的权值在做卷积运算时是不变的，所以减少了参数个数</p>
+<h3 id="3-卷积与卷积核"><a href="#3-卷积与卷积核" class="headerlink" title="3.卷积与卷积核"></a>3.卷积与卷积核</h3><p><img src="/images/cnn.gif" alt="卷积"><br>卷积公式：$y(n)=\sum_{i=-\infty}^{+\infty} x(i)h(n-i)$<br>tensorflow中接口：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tf.nn.conv2d(</span><br><span class="line">    input,     <span class="comment"># 输入</span></span><br><span class="line">    filter,    <span class="comment"># 卷积核，</span></span><br><span class="line">    strides,   <span class="comment"># 步长</span></span><br><span class="line">    padding,   <span class="comment"># ‘same’ 或者 'valid'</span></span><br><span class="line">    use_cudnn_on_gpu=<span class="keyword">True</span>,</span><br><span class="line">    data_format=<span class="string">'NHWC'</span>,</span><br><span class="line">    dilations=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>],</span><br><span class="line">    name=<span class="keyword">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>举个例子：<br>考虑一种最简单的情况，现在有一张3×3单通道的图像（对应的shape：[1，3，3，1]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，最后会得到一张3×3的feature map。</p>
 <p>增加图片的通道数，使用一张3×3五通道的图像（对应的shape：[1，3，3，5]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，仍然是一张3×3的feature map，这就相当于每一个像素点，卷积核都与该像素点的每一个通道做卷积。</p>
 <p>Strides表示卷积核移动的步长。</p>
-<p>Padding=&quot;SAME&quot;表示要填充input使得output的shape与input的shape一致。</p>
-<p>Padding=&quot;Valid&quot;表示不填充，output的shape为：$\frac{I-K}{2}+1$,I表示input的size，K表示kernal_size。
-动图所示为strides=1，padding='Valid'的情况。</p>
+<p>Padding=”SAME”表示要填充input使得output的shape与input的shape一致。</p>
+<p>Padding=”Valid”表示不填充，output的shape为：$\frac{I-K}{2}+1$,I表示input的size，K表示kernal_size。<br>动图所示为strides=1，padding=’Valid’的情况。</p>
 <p>卷积核表示卷积层训练出多少个局部特征。</p>
-<h3>4.池化</h3>
-<p><img src="/images/pooling.png" alt="池化">
-从卷积完的特征图里面选择最大（Max pooling）或者平均（Average pooling）的值作为局部特征被保留下来。</p>
-<h3>4.常见CNN结构</h3>
-<p><img src="/images/cnn_pool.png" alt="CNN"></p>
-<h3>5.图像领域经典CNN模型</h3>
-<p>1、LeNet
-<img src="/images/LeNet.png" alt="LeNet">
-2、VGG
-<img src="/images/VGG1.png" alt="VGG1">
-<img src="/images/VGG2.png" alt="VGG2">
-3、GoogLeNet <a href="https://blog.csdn.net/qq_31531635/article/details/72232651" target="_blank" rel="noopener">inception网络结构参考</a></p>
+<h3 id="4-池化"><a href="#4-池化" class="headerlink" title="4.池化"></a>4.池化</h3><p><img src="/images/pooling.png" alt="池化"><br>从卷积完的特征图里面选择最大（Max pooling）或者平均（Average pooling）的值作为局部特征被保留下来。</p>
+<h3 id="4-常见CNN结构"><a href="#4-常见CNN结构" class="headerlink" title="4.常见CNN结构"></a>4.常见CNN结构</h3><p><img src="/images/cnn_pool.png" alt="CNN"></p>
+<h3 id="5-图像领域经典CNN模型"><a href="#5-图像领域经典CNN模型" class="headerlink" title="5.图像领域经典CNN模型"></a>5.图像领域经典CNN模型</h3><p>1、LeNet<br><img src="/images/LeNet.png" alt="LeNet"><br>2、VGG<br><img src="/images/VGG1.png" alt="VGG1"><br><img src="/images/VGG2.png" alt="VGG2"><br>3、GoogLeNet <a href="https://blog.csdn.net/qq_31531635/article/details/72232651" target="_blank" rel="noopener">inception网络结构参考</a></p>
 <p>4、ResNet <a href="https://blog.csdn.net/lanran2/article/details/79057994" target="_blank" rel="noopener">深度残差网络参考</a></p>
-<h2>RNN</h2>
-<p>DNN和CNN已经在深度学习中很强了，但是他们无法解决序列到序列的训练，而RNN正是通过存储记忆来解决序列到序列的问题。
-<img src="/images/srnn.png" alt="基本RNN">
-图中三个公式，
-1、$h_{t}=f_w(h_{t-1}, x)$ 计算的是t时刻隐层的输出。</p>
-<p>2、$h_{t}=tanh(W_{hh}h_{t-1}+W_{xh}x_{t})$,这是$h_{t}$的具体公式，其中$W_{hh}$是隐层到隐层的权重，也就是记忆，$h_{t-1}$表示的是上一时刻的记忆，$W_{xh}$表示的是输入层的权重，$x_{t}$表示t时刻的输入</p>
-<p>3、$y_{t}$表示的是t时刻的输出，$W_{hy}$表示的是隐层到输出层的权重.</p>
-<p>一个RNN的例子，如图：
-<img src="/images/rnn.png" alt="RNN实例"></p>
-<h3>1.RNN展开</h3>
-<p><img src="/images/trnn.png" alt="RNN展开">
-RNN单层展开指，横向展开通常称为按时间序列展开，序列数据预测问题中，预测一个序列中的下一个次，最好能知道哪些词在它前面</p>
-<h3>2.RNN共用权重</h3>
-<p><img src="/images/wrnn.png" alt="RNN权重">
-RNN按时间展开后，$W_{input}$、$W_{hidden}$和$W_{output}$都是保持一样，并不是多个，这也是为什么RNN会出现梯度爆炸的原因。</p>
-<h3>3.RNN的BP（BPTT）</h3>
-<p>RNN的反向传播是按时间序列展开的，和普通的BP算法不一样，叫随时间反向传播(BackPropagation Through Time,BPTT)。<a href="https://www.cnblogs.com/wacc/p/5341670.html" target="_blank" rel="noopener">推导参考</a></p>
-<h3>4.RNN的不足</h3>
-<p>1、当展开一定步数后，开始输入的数据的记忆经过几次展开传递后，记忆力会衰弱。
-<img src="/images/rnn_e.png" alt="RNN缺点">
-2、当RNN深度和时间序列长度过高时，很容易同时出现梯度消失于梯度爆炸。</p>
-<h3>5.LSTM</h3>
-<p><img src="/images/lstm.png" alt="LSTM">
-长短期记忆网络（Long Short-Term Memory）LSTM不光解决了梯度消失的问题，同时解决了普通RNN记忆力只有短期记忆的问题。
-<img src="/images/lstm_g.png" alt="LSTM Gate">
-LSTM三个门：输入门，遗忘门，输出门，当$x_{t}$输入进去之后，相当于传入到4个地方，三个门以及作为数据输入，相应的公式计算，请参考<a href="https://blog.csdn.net/gzj_1101/article/details/79376798" target="_blank" rel="noopener">这篇博客</a></p>
-<h3>6.多层LSTM</h3>
-<p><img src="/images/mlstm.png" alt="Deep LSTM"></p>
-<h2>补充（Tensorflow中rnn的接口）</h2>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rnn_size = <span class="number">128</span>   <span class="comment"># rnn隐层节点数</span></span><br><span class="line">num_layers = <span class="number">5</span>   <span class="comment"># rnn层数</span></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="comment"># 第一步，构建LSTM单元</span></span><br><span class="line">decoder_cell = tf.contrib.rnn.LSTMCell(rnn_size,initializer=tf.random_uniform_initializer(<span class="number">-0.1</span>, <span class="number">0.1</span>, seed=<span class="number">2</span>))</span><br><span class="line"><span class="comment"># 第二步，构建多层网络</span></span><br><span class="line">cell = tf.contrib.rnn.MultiRNNCell([get_decoder_cell(rnn_size) <span class="keyword">for</span> _ <span class="keyword">in</span> range(num_layers)])</span><br></pre></td></tr></table></figure></p>
+<h2 id="RNN"><a href="#RNN" class="headerlink" title="RNN"></a>RNN</h2><p>DNN和CNN已经在深度学习中很强了，但是他们无法解决序列到序列的训练，而RNN正是通过存储记忆来解决序列到序列的问题。<br><img src="/images/srnn.png" alt="基本RNN"><br>图中三个公式，<br>1、$h<em>{t}=f_w(h</em>{t-1}, x)$ 计算的是t时刻隐层的输出。</p>
+<p>2、$h<em>{t}=tanh(W</em>{hh}h<em>{t-1}+W</em>{xh}x<em>{t})$,这是$h</em>{t}$的具体公式，其中$W<em>{hh}$是隐层到隐层的权重，也就是记忆，$h</em>{t-1}$表示的是上一时刻的记忆，$W<em>{xh}$表示的是输入层的权重，$x</em>{t}$表示t时刻的输入</p>
+<p>3、$y<em>{t}$表示的是t时刻的输出，$W</em>{hy}$表示的是隐层到输出层的权重.</p>
+<p>一个RNN的例子，如图：<br><img src="/images/rnn.png" alt="RNN实例"></p>
+<h3 id="1-RNN展开"><a href="#1-RNN展开" class="headerlink" title="1.RNN展开"></a>1.RNN展开</h3><p><img src="/images/trnn.png" alt="RNN展开"><br>RNN单层展开指，横向展开通常称为按时间序列展开，序列数据预测问题中，预测一个序列中的下一个次，最好能知道哪些词在它前面</p>
+<h3 id="2-RNN共用权重"><a href="#2-RNN共用权重" class="headerlink" title="2.RNN共用权重"></a>2.RNN共用权重</h3><p><img src="/images/wrnn.png" alt="RNN权重"><br>RNN按时间展开后，$W<em>{input}$、$W</em>{hidden}$和$W_{output}$都是保持一样，并不是多个，这也是为什么RNN会出现梯度爆炸的原因。</p>
+<h3 id="3-RNN的BP（BPTT）"><a href="#3-RNN的BP（BPTT）" class="headerlink" title="3.RNN的BP（BPTT）"></a>3.RNN的BP（BPTT）</h3><p>RNN的反向传播是按时间序列展开的，和普通的BP算法不一样，叫随时间反向传播(BackPropagation Through Time,BPTT)。<a href="https://www.cnblogs.com/wacc/p/5341670.html" target="_blank" rel="noopener">推导参考</a></p>
+<h3 id="4-RNN的不足"><a href="#4-RNN的不足" class="headerlink" title="4.RNN的不足"></a>4.RNN的不足</h3><p>1、当展开一定步数后，开始输入的数据的记忆经过几次展开传递后，记忆力会衰弱。<br><img src="/images/rnn_e.png" alt="RNN缺点"><br>2、当RNN深度和时间序列长度过高时，很容易同时出现梯度消失于梯度爆炸。</p>
+<h3 id="5-LSTM"><a href="#5-LSTM" class="headerlink" title="5.LSTM"></a>5.LSTM</h3><p><img src="/images/lstm.png" alt="LSTM"><br>长短期记忆网络（Long Short-Term Memory）LSTM不光解决了梯度消失的问题，同时解决了普通RNN记忆力只有短期记忆的问题。<br><img src="/images/lstm_g.png" alt="LSTM Gate"><br>LSTM三个门：输入门，遗忘门，输出门，当$x_{t}$输入进去之后，相当于传入到4个地方，三个门以及作为数据输入，相应的公式计算，请参考<a href="https://blog.csdn.net/gzj_1101/article/details/79376798" target="_blank" rel="noopener">这篇博客</a></p>
+<h3 id="6-多层LSTM"><a href="#6-多层LSTM" class="headerlink" title="6.多层LSTM"></a>6.多层LSTM</h3><p><img src="/images/mlstm.png" alt="Deep LSTM"></p>
+<h2 id="补充（Tensorflow中rnn的接口）"><a href="#补充（Tensorflow中rnn的接口）" class="headerlink" title="补充（Tensorflow中rnn的接口）"></a>补充（Tensorflow中rnn的接口）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rnn_size = <span class="number">128</span>   <span class="comment"># rnn隐层节点数</span></span><br><span class="line">num_layers = <span class="number">5</span>   <span class="comment"># rnn层数</span></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="comment"># 第一步，构建LSTM单元</span></span><br><span class="line">decoder_cell = tf.contrib.rnn.LSTMCell(rnn_size,initializer=tf.random_uniform_initializer(<span class="number">-0.1</span>, <span class="number">0.1</span>, seed=<span class="number">2</span>))</span><br><span class="line"><span class="comment"># 第二步，构建多层网络</span></span><br><span class="line">cell = tf.contrib.rnn.MultiRNNCell([get_decoder_cell(rnn_size) <span class="keyword">for</span> _ <span class="keyword">in</span> range(num_layers)])</span><br></pre></td></tr></table></figure>
 <p>RNN与CNN和DNN结构不太一样，所以在此记录一下</p>
 
           
@@ -962,76 +1084,26 @@ LSTM三个门：输入门，遗忘门，输出门，当$x_{t}$输入进去之后
       
         
           
-            <h2>反向传播</h2>
-<h3>举个例子</h3>
-<p><img src="/images/bp.png" alt="BP">
-第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">其中，输入数据  i1=0.05，i2=0.10;</span><br><span class="line">输出数据        o1=0.01,o2=0.99;</span><br><span class="line">　　初始权重  w1=0.15,w2=0.20,w3=0.25,w4=0.30;</span><br><span class="line">          w5=0.40,w6=0.45,w7=0.50,w8=0.55</span><br></pre></td></tr></table></figure></p>
-<p>目标：给出输入数据i1,i2(0.05和0.10)，使输出尽可能与原始输出o1,o2(0.01和0.99)接近。</p>
-<h3>1.前向传播（输入层-隐含层）</h3>
-<p>计算神经元h1的输入加权和：
-$$ out_{h_{i}}=\sigma(w_{i}*i_{i} + w_{i}*i_{i} + b_{i}*1) $$
-则计算结果分别为：
-$$out_{h1}=0.593269 $$  $$out_{h2}=0.596884 $$</p>
-<h3>前向传播（隐含层-输出层）</h3>
-<p>同样的方法$$ out_{o_{j}}=\sigma(w_{j}*out_{h_{j1}} + w_{j}*out_{h_{j2}} + b_{j}*1) $$
-则计算结果为：
-$$out_{o1}=0.751365 $$  $$out_{o2}=0.772928 $$
-这样前向传播的过程就结束了，我们得到输出值为[0.751365, 0.772928]，与实际值[0.01， 0.99]相差还很远，现在我们对误差进行反向传播，更新权值，重新计算输出。</p>
-<h3>2.反向传播</h3>
-<h4>计算总误差(均方误差)</h4>
-<p>$$ E_{total} = \sum\frac{1}{2}(target-output)^{2} $$所以$$E_{total}=E_{o1}+E_{o2}=0.274811+0.023561 = 0.298371 $$</p>
-<h4>隐含层的权重更新</h4>
-<p>以权重$w_{5}$为例，如果我们想知道$w_{5}$对整体误差产生了多少影响，可以用整体误差对$w_{5}$求偏导求出（链式法则）：
-$$\frac{\partial E_{ total}}{\partial w_{5}}=\frac{\partial E_{total}}{\partial out_{w_{5}}}*\frac{\partial out_{w_{5}}}{\partial w_{5}}$$
-接下来是复合函数求导，先对sigmoid求导，在对$w_{5}$求导。最终我们得到的结果是：
-$$\frac{\partial E_{ total}}{\partial w_{5}}=-(target_{o1}-out_{o1})<em>out_{o1}(1-out_{o1})<em>out_{h1}$$总结一下就是：误差</em>激活函数梯度</em>上一层的输出值,为了表示方便，我们用$\delta_{o1}$来表示输出层的误差，$$ \delta_{o1} = -(target_{o1}-out_{o1})*out_{o1}(1-out_{o1}) $$ $$ \frac{\partial E_{ total}}{\partial w_{5}}=\delta_{o1}<em>out_{h1} $$
-最后我们来更新$w_{5}$的值：$$ w_{5}^{+} = w_{5} - \eta\frac{\partial E_{ total}}{\partial w_{5}}=0.4-0.01</em>0.082167=0.358916 $$这里$\eta=0.01$，表示学习率，同理，可以更新所有的$w$值。
-<img src="/images/gd.png" alt="GD">
-重复迭代次数可以使得总误差越来越接近真实值。</p>
-<h2>梯度下降</h2>
-<h3>1.先做一道数学题</h3>
-<p>用最速下降法求解无约束非线性规划问题，$$ minf(X)= x_{1}-x_{2}+2x_{1}^{2}+2x_{1}x_{2}+x_{2}^{2} $$,其中$X=(x_{1},x_{x2})^\mathrm{T}$，要求选取初始点$X^{1}=(0,0)^\mathrm{T}$，终止误差$\varepsilon=0.5$
-解：目标函数的梯度$\nabla f(x)=\begin{bmatrix}
-\frac{\partial f(x)}{\partial x_{1}}    \
-\frac{\partial f(x)}{\partial x_{2}}
-\end{bmatrix} = \begin{bmatrix}
-1+4x_{1}+2x_{2}    \
--1+2x_{1}+2x_{2}
-\end{bmatrix}$,
-$\nabla f(X^{1})=\begin{bmatrix}
-1    \
--1
-\end{bmatrix}$令搜索方向$d^{1}=-\nabla f(x^{1})$,再从$X^{1}$出发，沿着$d^{1}$方向作一维寻优，令步长变量为$\lambda$,最优步长为$\lambda_{1}$,则有$$ X^{1}+\lambda d^{1}= \begin{bmatrix}
-0    \
+            <h2 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h2><h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p><img src="/images/bp.png" alt="BP"><br>第一层是输入层，包含两个神经元i1，i2，和截距项b1；第二层是隐含层，包含两个神经元h1,h2和截距项b2，第三层是输出o1,o2，每条线上标的wi是层与层之间连接的权重，激活函数我们默认为sigmoid函数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">其中，输入数据  i1=0.05，i2=0.10;</span><br><span class="line">输出数据        o1=0.01,o2=0.99;</span><br><span class="line">　　初始权重  w1=0.15,w2=0.20,w3=0.25,w4=0.30;</span><br><span class="line">          w5=0.40,w6=0.45,w7=0.50,w8=0.55</span><br></pre></td></tr></table></figure></p>
+<p>　　目标：给出输入数据i1,i2(0.05和0.10)，使输出尽可能与原始输出o1,o2(0.01和0.99)接近。</p>
+<h3 id="1-前向传播（输入层-隐含层）"><a href="#1-前向传播（输入层-隐含层）" class="headerlink" title="1.前向传播（输入层-隐含层）"></a>1.前向传播（输入层-隐含层）</h3><p>计算神经元h1的输入加权和：</p>
+<script type="math/tex; mode=display">out_{h_{i}}=\sigma(w_{i}*i_{i} + w_{i}*i_{i} + b_{i}*1)</script><p>则计算结果分别为：</p>
+<script type="math/tex; mode=display">out_{h1}=0.593269 $$  $$out_{h2}=0.596884</script><h3 id="前向传播（隐含层-输出层）"><a href="#前向传播（隐含层-输出层）" class="headerlink" title="前向传播（隐含层-输出层）"></a>前向传播（隐含层-输出层）</h3><p>同样的方法<script type="math/tex">out_{o_{j}}=\sigma(w_{j}*out_{h_{j1}} + w_{j}*out_{h_{j2}} + b_{j}*1)</script><br>则计算结果为：</p>
+<script type="math/tex; mode=display">out_{o1}=0.751365 $$  $$out_{o2}=0.772928</script><p>这样前向传播的过程就结束了，我们得到输出值为[0.751365, 0.772928]，与实际值[0.01， 0.99]相差还很远，现在我们对误差进行反向传播，更新权值，重新计算输出。</p>
+<h3 id="2-反向传播"><a href="#2-反向传播" class="headerlink" title="2.反向传播"></a>2.反向传播</h3><h4 id="计算总误差-均方误差"><a href="#计算总误差-均方误差" class="headerlink" title="计算总误差(均方误差)"></a>计算总误差(均方误差)</h4><script type="math/tex; mode=display">E_{total} = \sum\frac{1}{2}(target-output)^{2} $$所以$$E_{total}=E_{o1}+E_{o2}=0.274811+0.023561 = 0.298371</script><h4 id="隐含层的权重更新"><a href="#隐含层的权重更新" class="headerlink" title="隐含层的权重更新"></a>隐含层的权重更新</h4><p>以权重$w<em>{5}$为例，如果我们想知道$w</em>{5}$对整体误差产生了多少影响，可以用整体误差对$w_{5}$求偏导求出（链式法则）：</p>
+<script type="math/tex; mode=display">\frac{\partial E_{ total}}{\partial w_{5}}=\frac{\partial E_{total}}{\partial out_{w_{5}}}*\frac{\partial out_{w_{5}}}{\partial w_{5}}</script><p>接下来是复合函数求导，先对sigmoid求导，在对$w_{5}$求导。最终我们得到的结果是：</p>
+<script type="math/tex; mode=display">\frac{\partial E_{ total}}{\partial w_{5}}=-(target_{o1}-out_{o1})*out_{o1}(1-out_{o1})*out_{h1}$$总结一下就是：误差*激活函数梯度*上一层的输出值,为了表示方便，我们用$\delta_{o1}$来表示输出层的误差，$$ \delta_{o1} = -(target_{o1}-out_{o1})*out_{o1}(1-out_{o1}) $$ $$ \frac{\partial E_{ total}}{\partial w_{5}}=\delta_{o1}*out_{h1}</script><p>最后我们来更新$w<em>{5}$的值：$$ w</em>{5}^{+} = w<em>{5} - \eta\frac{\partial E</em>{ total}}{\partial w_{5}}=0.4-0.01*0.082167=0.358916 $$这里$\eta=0.01$，表示学习率，同理，可以更新所有的$w$值。<br><img src="/images/gd.png" alt="GD"><br>重复迭代次数可以使得总误差越来越接近真实值。</p>
+<h2 id="梯度下降"><a href="#梯度下降" class="headerlink" title="梯度下降"></a>梯度下降</h2><h3 id="1-先做一道数学题"><a href="#1-先做一道数学题" class="headerlink" title="1.先做一道数学题"></a>1.先做一道数学题</h3><p>用最速下降法求解无约束非线性规划问题，<script type="math/tex">minf(X)= x_{1}-x_{2}+2x_{1}^{2}+2x_{1}x_{2}+x_{2}^{2}</script>,其中$X=(x<em>{1},x</em>{x2})^\mathrm{T}$，要求选取初始点$X^{1}=(0,0)^\mathrm{T}$，终止误差$\varepsilon=0.5$<br>解：目标函数的梯度$\nabla f(x)=\begin{bmatrix}<br>\frac{\partial f(x)}{\partial x<em>{1}}    \<br>\frac{\partial f(x)}{\partial x</em>{2}}<br>\end{bmatrix} = \begin{bmatrix}<br>1+4x<em>{1}+2x</em>{2}    \<br>-1+2x<em>{1}+2x</em>{2}<br>\end{bmatrix}$,<br>$\nabla f(X^{1})=\begin{bmatrix}<br>1    \<br>-1<br>\end{bmatrix}$令搜索方向$d^{1}=-\nabla f(x^{1})$,再从$X^{1}$出发，沿着$d^{1}$方向作一维寻优，令步长变量为$\lambda$,最优步长为$\lambda<em>{1}$,则有<script type="math/tex">X^{1}+\lambda d^{1}= \begin{bmatrix}
+0    \\
 0
 \end{bmatrix} + \lambda \begin{bmatrix}
--1    \
+-1    \\
 1
 \end{bmatrix}=\begin{bmatrix}
--\lambda    \
-\lambda
-\end{bmatrix}$$, 故有$f(x)=f(X^{1}+\lambda d^{1})=(-\lambda)-\lambda + 2(-\lambda)^2+2(-\lambda)\lambda + \lambda ^{2}=\lambda ^{2}-2\lambda=\varphi_{1}(\lambda)$,令$\varphi_{1}(\lambda)=0$可得，$\lambda_{1}=1$,则$X^{2}=X^{1}+\lambda_{1}d^{1}=\begin{bmatrix}
--1    \
-1
-\end{bmatrix}$,求出$X^{2}$之后，与上类似地，进行第二次迭代：$\nabla f(X^{2})= \begin{bmatrix}
--1    \
-1
-\end{bmatrix}$，令$d^{2}=-\nabla f(X^{2})$，令步长变量为$\lambda$，求出最优步长$\lambda_{2}$，固有$f(x)=f(X^{2}+\lambda d^{2})=0$,求得$\lambda_{2}=\frac{1}{5}$,
-同理：$X^{3}=X^{2}+\lambda_{2}d^{2}=\begin{bmatrix}
--0.8    \
-1.2
-\end{bmatrix}$,此时$\nabla f(X^{3})=\begin{bmatrix}
-0.2    \
--0.2
-\end{bmatrix}$,此时所达到的精度$\begin{Vmatrix}
-\nabla f(X^{3})
-\end{Vmatrix}\approx 0.2828$,故此题的最优解$X^{<em>}=\begin{bmatrix}
--1    \
-1.5
-\end{bmatrix}$,$f(X^{</em>})=-1.25$</p>
-<h5>从上述题目中可以总结梯度下降法的一般迭代步骤：</h5>
-<blockquote>
+-\lambda    \\
+\lambda 
+\end{bmatrix}</script>, 故有$f(x)=f(X^{1}+\lambda d^{1})=(-\lambda)-\lambda + 2(-\lambda)^2+2(-\lambda)\lambda + \lambda ^{2}=\lambda ^{2}-2\lambda=\varphi</em>{1}(\lambda)$,令$\varphi<em>{1}(\lambda)=0$可得，$\lambda</em>{1}=1$,则$X^{2}=X^{1}+\lambda<em>{1}d^{1}=\begin{bmatrix}<br>-1    \<br>1<br>\end{bmatrix}$,求出$X^{2}$之后，与上类似地，进行第二次迭代：$\nabla f(X^{2})= \begin{bmatrix}<br>-1    \<br>1<br>\end{bmatrix}$，令$d^{2}=-\nabla f(X^{2})$，令步长变量为$\lambda$，求出最优步长$\lambda</em>{2}$，固有$f(x)=f(X^{2}+\lambda d^{2})=0$,求得$\lambda<em>{2}=\frac{1}{5}$,<br>同理：$X^{3}=X^{2}+\lambda</em>{2}d^{2}=\begin{bmatrix}<br>-0.8    \<br>1.2<br>\end{bmatrix}$,此时$\nabla f(X^{3})=\begin{bmatrix}<br>0.2    \<br>-0.2<br>\end{bmatrix}$,此时所达到的精度$\begin{Vmatrix}<br>\nabla f(X^{3})<br>\end{Vmatrix}\approx 0.2828$,故此题的最优解$X^{<em>}=\begin{bmatrix}<br>-1    \<br>1.5<br>\end{bmatrix}$,$f(X^{</em>})=-1.25$</p>
+<h5 id="从上述题目中可以总结梯度下降法的一般迭代步骤："><a href="#从上述题目中可以总结梯度下降法的一般迭代步骤：" class="headerlink" title="从上述题目中可以总结梯度下降法的一般迭代步骤："></a>从上述题目中可以总结梯度下降法的一般迭代步骤：</h5><blockquote>
 <ul>
 <li>先确定向下一步的步伐大小，我们称为Learning rate；</li>
 <li>任意给定一个初始值；</li>
@@ -1040,19 +1112,11 @@ $\nabla f(X^{1})=\begin{bmatrix}
 </ul>
 </blockquote>
 <p>更新初始值的方法：$\theta^{n+1}=\theta^{n}-\eta\nabla C(\theta^{n})$</p>
-<h3>2.梯度下降原理</h3>
-<p>导数的概念：$$ f'(x_{0})= \lim_{\Delta x \to 0}\frac{\Delta y}{\Delta x} = \lim_{\Delta x \to 0}\frac{f(x_{0}+\Delta x) - f(x_{0})}{\Delta x} $$，由公式可见，对点$x_{0}$的导数反应了函数在点$x_{0}$处的瞬时变化率，或者叫斜率，推广到多维函数中，就有了梯度的概念，梯度是一个向量组合，反映了多维图形中变化速率最快的方向。</p>
-<h2>补充（tensorflow中常用的优化算法API）</h2>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">tf.train.Optimizer</span><br><span class="line">tf.train.GradientDescentOptimizer</span><br><span class="line">tf.train.AdadeltaOptimizer</span><br><span class="line">tf.train.AdagradOptimizer</span><br><span class="line">tf.train.AdagradDAOptimizer</span><br><span class="line">tf.train.MomentumOptimizer</span><br><span class="line">tf.train.AdamOptimizer</span><br><span class="line">tf.train.FtrlOptimizer</span><br><span class="line">tf.train.ProximalGradientDescentOptimizer</span><br><span class="line">tf.train.ProximalAdagradOptimizer</span><br><span class="line">tf.train.RMSPropOptimizer</span><br></pre></td></tr></table></figure></p>
-<p>1、 tf.train.GradientDescentOptimizer
-这个优化器主要实现的是:梯度下降算法
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'GradientDescent'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>2、 tf.train.MomentumOptimizer
-实现动量梯度下降算法,可参考<a href="https://blog.csdn.net/yinruiyang94/article/details/77944338" target="_blank" rel="noopener"> 简述动量Momentum梯度下降</a>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    momentum,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Momentum'</span>,</span><br><span class="line">    use_nesterov=<span class="keyword">False</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>3、tf.train.AdamOptimizer
-实现 Adam优化算法（Adam 这个名字来源于 adaptive moment estimation，自适应矩估计。）可参考博客<a href="https://blog.csdn.net/zb1165048017/article/details/78392623" target="_blank" rel="noopener">梯度优化算法Adam</a>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate=<span class="number">0.001</span>,</span><br><span class="line">    beta1=<span class="number">0.9</span>,</span><br><span class="line">    beta2=<span class="number">0.999</span>,</span><br><span class="line">    epsilon=<span class="number">1e-08</span>,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Adam'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-梯度下降原理"><a href="#2-梯度下降原理" class="headerlink" title="2.梯度下降原理"></a>2.梯度下降原理</h3><p>导数的概念：<script type="math/tex">f'(x_{0})= \lim_{\Delta x \to 0}\frac{\Delta y}{\Delta x} = \lim_{\Delta x \to 0}\frac{f(x_{0}+\Delta x) - f(x_{0})}{\Delta x}</script>，由公式可见，对点$x<em>{0}$的导数反应了函数在点$x</em>{0}$处的瞬时变化率，或者叫斜率，推广到多维函数中，就有了梯度的概念，梯度是一个向量组合，反映了多维图形中变化速率最快的方向。</p>
+<h2 id="补充（tensorflow中常用的优化算法API）"><a href="#补充（tensorflow中常用的优化算法API）" class="headerlink" title="补充（tensorflow中常用的优化算法API）"></a>补充（tensorflow中常用的优化算法API）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">tf.train.Optimizer</span><br><span class="line">tf.train.GradientDescentOptimizer</span><br><span class="line">tf.train.AdadeltaOptimizer</span><br><span class="line">tf.train.AdagradOptimizer</span><br><span class="line">tf.train.AdagradDAOptimizer</span><br><span class="line">tf.train.MomentumOptimizer</span><br><span class="line">tf.train.AdamOptimizer</span><br><span class="line">tf.train.FtrlOptimizer</span><br><span class="line">tf.train.ProximalGradientDescentOptimizer</span><br><span class="line">tf.train.ProximalAdagradOptimizer</span><br><span class="line">tf.train.RMSPropOptimizer</span><br></pre></td></tr></table></figure>
+<p>1、 tf.train.GradientDescentOptimizer<br>这个优化器主要实现的是:梯度下降算法<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'GradientDescent'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>2、 tf.train.MomentumOptimizer<br>实现动量梯度下降算法,可参考<a href="https://blog.csdn.net/yinruiyang94/article/details/77944338" target="_blank" rel="noopener"> 简述动量Momentum梯度下降</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate,</span><br><span class="line">    momentum,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Momentum'</span>,</span><br><span class="line">    use_nesterov=<span class="keyword">False</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>3、tf.train.AdamOptimizer<br> 实现 Adam优化算法（Adam 这个名字来源于 adaptive moment estimation，自适应矩估计。）可参考博客<a href="https://blog.csdn.net/zb1165048017/article/details/78392623" target="_blank" rel="noopener">梯度优化算法Adam</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    learning_rate=<span class="number">0.001</span>,</span><br><span class="line">    beta1=<span class="number">0.9</span>,</span><br><span class="line">    beta2=<span class="number">0.999</span>,</span><br><span class="line">    epsilon=<span class="number">1e-08</span>,</span><br><span class="line">    use_locking=<span class="keyword">False</span>,</span><br><span class="line">    name=<span class="string">'Adam'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -1205,18 +1269,11 @@ $\nabla f(X^{1})=\begin{bmatrix}
         
           
             <p>交叉熵（cross entropy）是深度学习中常用的一个概念，一般用来求目标与预测值之间的差距。以前做一些分类问题的时候，没有过多的注意，直接调用现成的库，用起来也比较方便。最近发现自己对交叉熵的理解有些模糊，不够深入。</p>
-<h2>信息论</h2>
-<p>交叉熵是信息论中的一个概念，要想了解交叉熵的本质，需要先从最基本的概念讲起。</p>
-<h3>1.信息量</h3>
-<p>如果说概率P是对确定性的度量，那么信息就是对不确定性的度量
-举个例子：
-事件A：巴西队进入了2018世界杯决赛
-事件B：中国对进入了2018世界杯决赛
-凭直觉来说，事件B的信息量比事件A的信息量大，究其原因，是因为事件A发生的概率很大，事件B发生的概率很小。所以当越不可能发生的事件发生了，我们获取到的信息量就越大。那么信息量应该和事件发生的概率有关，信息量的大小和事件发生的概率成反比。具体的数学表示如下：</p>
-<p>假设$X$是一个离散型随机变量，其取值集合为$\chi$,概率分布函数$ p(x)=P(X=x),x\epsilon\chi$,则定义事件$X=x_{0}$的信息量为：
-$$I(x_0)=-log(p(x_0))$$</p>
-<h3>2.熵</h3>
-<p>考虑另一个问题，对于某个事件，有$n$种可能性，每一种可能性都有一个概率$p(x_{i})$,这样就可以计算出某一种可能性的信息量</p>
+<h2 id="信息论"><a href="#信息论" class="headerlink" title="信息论"></a>信息论</h2><p>交叉熵是信息论中的一个概念，要想了解交叉熵的本质，需要先从最基本的概念讲起。</p>
+<h3 id="1-信息量"><a href="#1-信息量" class="headerlink" title="1.信息量"></a>1.信息量</h3><p>如果说概率P是对确定性的度量，那么信息就是对不确定性的度量<br>举个例子：<br>事件A：巴西队进入了2018世界杯决赛<br>事件B：中国对进入了2018世界杯决赛<br>凭直觉来说，事件B的信息量比事件A的信息量大，究其原因，是因为事件A发生的概率很大，事件B发生的概率很小。所以当越不可能发生的事件发生了，我们获取到的信息量就越大。那么信息量应该和事件发生的概率有关，信息量的大小和事件发生的概率成反比。具体的数学表示如下：</p>
+<p>假设$X$是一个离散型随机变量，其取值集合为$\chi$,概率分布函数$ p(x)=P(X=x),x\epsilon\chi$,则定义事件$X=x_{0}$的信息量为：</p>
+<script type="math/tex; mode=display">I(x_0)=-log(p(x_0))</script><h3 id="2-熵"><a href="#2-熵" class="headerlink" title="2.熵"></a>2.熵</h3><p>考虑另一个问题，对于某个事件，有$n$种可能性，每一种可能性都有一个概率$p(x_{i})$,这样就可以计算出某一种可能性的信息量</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -1247,43 +1304,30 @@ $$I(x_0)=-log(p(x_0))$$</p>
 </tr>
 </tbody>
 </table>
-<p>现在有了信息量的定义，而熵用来表示所有信息量的期望，即：
-$$H(X)=-\sum_{i=1}^n p(x_i)log(p(x_i))$$
-其中$n$代表所有的n中可能性，所以上面的结果就是：
-$$\begin{eqnarray}
-H(X)&amp;=&amp;-[p(A)log(p(A))+p(B)log(p(B))+p(C))log(p(C))]\
-&amp;=&amp;0.7\times 0.36+0.2\times 1.61+0.1\times 2.30\
-&amp;=&amp;0.804
-\end{eqnarray}$$</p>
-<p>然而一些比较特殊的问题，比如投掷硬币只有两种可能，买彩票只有两种可能，我们称之为0-1分布问题，对于这类问题，熵的计算方法可以简化为如下计算：
-$$\begin{eqnarray}
-H(X)&amp;=&amp;-\sum_{i=1}^n p(x_i)log(p(x_i))\
-&amp;=&amp;-p(x)log(p(x))-(1-p(x))log(1-p(x))
-\end{eqnarray}$$</p>
-<h3>3.相对熵(KL散度)</h3>
-<p>相对熵又称KL散度,如果我们对于同一个随机变量 x 有两个单独的概率分布 P(x) 和 Q(x)，我们可以使用 KL 散度（Kullback-Leibler (KL) divergence）来衡量这两个分布的差异。
-如果用P来描述目标问题，而不是用Q来描述目标问题，得到的信息增量，&lt;font color='red'&gt;在机器学习中，P往往用来表示样本的真实分布，比如[1,0,0]表示当前样本属于第一类。Q用来表示模型所预测的分布，比如[0.7,0.2,0.1] &lt;/font&gt;。
-直观的理解就是如果用P来描述样本，那么就非常完美。而用Q来描述样本，虽然可以大致描述，但是不是那么的完美，信息量不足，需要额外的一些“信息增量”才能达到和P一样完美的描述。如果我们的Q通过反复训练，也能完美的描述样本，那么就不再需要额外的“信息增量”，Q等价于P。KL散度的计算公式：
-$$D_{KL}(p||q)=\sum_{i=1}^np(x_i)log(\frac{p(x_i)}{q(x_i)})$$
-n为事件的所有可能性，$D_{KL}$的值越小，表示q分布和p分布越接近</p>
-<h3>4.交叉熵</h3>
-<p>对上式KL散度变形可以得到：
-$$\begin{eqnarray}
-D_{KL}(p||q) &amp;=&amp; \sum_{i=1}^np(x_i)log(p(x_i))-\sum_{i=1}^np(x_i)log(q(x_i))\
-&amp;=&amp; -H(p(x))+[-\sum_{i=1}^np(x_i)log(q(x_i))]
-\end{eqnarray}$$</p>
-<p>等式的前一部分正是p的熵，等式的后一部分，就是交叉熵：
-$$H(p,q)=-\sum_{i=1}^np(x_i)log(q(x_i))$$</p>
-<p>在机器学习中，我们需要评估label和predict之间的差距，使用KL散度刚刚好，即：$D_{KL}(y||\hat{y})$，由于KL散度中的前一部分$-H(y)$不变，故在优化过程中，只需要关注交叉熵就可以了。</p>
-<h2>机器学习中交叉熵的应用</h2>
-<h3>1.为什么要用交叉熵做loss函数？</h3>
-<p>在逻辑回归问题中，常常使用MSE（Mean Squared Error）作为loss函数，如：
-$$loss = \frac{1}{2m}\sum_{i=1}^m(y_i-\hat{y_i})^2$$</p>
-<p>这里的m表示m个样本，loss为m个样本loss的均值。MSE在逻辑回归问题中比较好用，那么在分类问题中还是如此么？</p>
-<h3>2.交叉熵在单分类问题中的使用</h3>
-<p>这里的单分类是指，每一张图像样本只能有一个类别，比如只能是狗或者只能是猫。交叉熵在单分类问题上的标配方法是：
-$$loss=-\sum_{i=1}^{n}y_ilog(\hat{y_i})$$</p>
-<p>这个式子为计算一张样本的loss，n表示有n中类别，每个样本只属于其中一种，举例说明：</p>
+</div>
+<p>现在有了信息量的定义，而熵用来表示所有信息量的期望，即：</p>
+<script type="math/tex; mode=display">H(X)=-\sum_{i=1}^n p(x_i)log(p(x_i))</script><p>其中$n$代表所有的n中可能性，所以上面的结果就是：</p>
+<script type="math/tex; mode=display">\begin{eqnarray}
+H(X)&=&-[p(A)log(p(A))+p(B)log(p(B))+p(C))log(p(C))]\\
+&=&0.7\times 0.36+0.2\times 1.61+0.1\times 2.30\\
+&=&0.804
+\end{eqnarray}</script><p>然而一些比较特殊的问题，比如投掷硬币只有两种可能，买彩票只有两种可能，我们称之为0-1分布问题，对于这类问题，熵的计算方法可以简化为如下计算：</p>
+<script type="math/tex; mode=display">\begin{eqnarray}
+H(X)&=&-\sum_{i=1}^n p(x_i)log(p(x_i))\\
+&=&-p(x)log(p(x))-(1-p(x))log(1-p(x))
+\end{eqnarray}</script><h3 id="3-相对熵-KL散度"><a href="#3-相对熵-KL散度" class="headerlink" title="3.相对熵(KL散度)"></a>3.相对熵(KL散度)</h3><p>相对熵又称KL散度,如果我们对于同一个随机变量 x 有两个单独的概率分布 P(x) 和 Q(x)，我们可以使用 KL 散度（Kullback-Leibler (KL) divergence）来衡量这两个分布的差异。<br>如果用P来描述目标问题，而不是用Q来描述目标问题，得到的信息增量，<font color="red">在机器学习中，P往往用来表示样本的真实分布，比如[1,0,0]表示当前样本属于第一类。Q用来表示模型所预测的分布，比如[0.7,0.2,0.1] </font>。<br>直观的理解就是如果用P来描述样本，那么就非常完美。而用Q来描述样本，虽然可以大致描述，但是不是那么的完美，信息量不足，需要额外的一些“信息增量”才能达到和P一样完美的描述。如果我们的Q通过反复训练，也能完美的描述样本，那么就不再需要额外的“信息增量”，Q等价于P。KL散度的计算公式：</p>
+<script type="math/tex; mode=display">D_{KL}(p||q)=\sum_{i=1}^np(x_i)log(\frac{p(x_i)}{q(x_i)})</script><p>n为事件的所有可能性，$D_{KL}$的值越小，表示q分布和p分布越接近</p>
+<h3 id="4-交叉熵"><a href="#4-交叉熵" class="headerlink" title="4.交叉熵"></a>4.交叉熵</h3><p>对上式KL散度变形可以得到：</p>
+<script type="math/tex; mode=display">\begin{eqnarray}
+D_{KL}(p||q) &=& \sum_{i=1}^np(x_i)log(p(x_i))-\sum_{i=1}^np(x_i)log(q(x_i))\\
+&=& -H(p(x))+[-\sum_{i=1}^np(x_i)log(q(x_i))]
+\end{eqnarray}</script><p>等式的前一部分正是p的熵，等式的后一部分，就是交叉熵：</p>
+<script type="math/tex; mode=display">H(p,q)=-\sum_{i=1}^np(x_i)log(q(x_i))</script><p>在机器学习中，我们需要评估label和predict之间的差距，使用KL散度刚刚好，即：$D_{KL}(y||\hat{y})$，由于KL散度中的前一部分$-H(y)$不变，故在优化过程中，只需要关注交叉熵就可以了。</p>
+<h2 id="机器学习中交叉熵的应用"><a href="#机器学习中交叉熵的应用" class="headerlink" title="机器学习中交叉熵的应用"></a>机器学习中交叉熵的应用</h2><h3 id="1-为什么要用交叉熵做loss函数？"><a href="#1-为什么要用交叉熵做loss函数？" class="headerlink" title="1.为什么要用交叉熵做loss函数？"></a>1.为什么要用交叉熵做loss函数？</h3><p>在逻辑回归问题中，常常使用MSE（Mean Squared Error）作为loss函数，如：</p>
+<script type="math/tex; mode=display">loss = \frac{1}{2m}\sum_{i=1}^m(y_i-\hat{y_i})^2</script><p>这里的m表示m个样本，loss为m个样本loss的均值。MSE在逻辑回归问题中比较好用，那么在分类问题中还是如此么？</p>
+<h3 id="2-交叉熵在单分类问题中的使用"><a href="#2-交叉熵在单分类问题中的使用" class="headerlink" title="2.交叉熵在单分类问题中的使用"></a>2.交叉熵在单分类问题中的使用</h3><p>这里的单分类是指，每一张图像样本只能有一个类别，比如只能是狗或者只能是猫。交叉熵在单分类问题上的标配方法是：</p>
+<script type="math/tex; mode=display">loss=-\sum_{i=1}^{n}y_ilog(\hat{y_i})</script><p>这个式子为计算一张样本的loss，n表示有n中类别，每个样本只属于其中一种，举例说明：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -1308,16 +1352,15 @@ $$loss=-\sum_{i=1}^{n}y_ilog(\hat{y_i})$$</p>
 </tr>
 </tbody>
 </table>
-<p>那么loss为：
-$$\begin{eqnarray}
-loss&amp;=&amp;-(0\times log(0.3)+1\times log(0.6)+0\times log(0.1)\
-&amp;=&amp;-log(0.6)
-\end{eqnarray}$$</p>
-<p>对应一个batch的loss就是：
-$$loss=-\frac{1}{m}\sum_{j=1}^m\sum_{i=1}^{n}y_{ji}log(\hat{y_{ji}})$$</p>
-<p>m为当前batch的样本数</p>
-<h3>3.交叉熵在多分类问题中的使用</h3>
-<p>这里的多类别是指，每一张图像样本可以由多个类别，比如同时包含一只猫和一只狗，和单分类问题的标签不同，多分类的标签是n-hot的。比如一张图里面既有猫，又有狗，那么具体看例子：</p>
+</div>
+<p>那么loss为：</p>
+<script type="math/tex; mode=display">\begin{eqnarray}
+loss&=&-(0\times log(0.3)+1\times log(0.6)+0\times log(0.1)\\
+&=&-log(0.6)
+\end{eqnarray}</script><p>对应一个batch的loss就是：</p>
+<script type="math/tex; mode=display">loss=-\frac{1}{m}\sum_{j=1}^m\sum_{i=1}^{n}y_{ji}log(\hat{y_{ji}})</script><p>m为当前batch的样本数</p>
+<h3 id="3-交叉熵在多分类问题中的使用"><a href="#3-交叉熵在多分类问题中的使用" class="headerlink" title="3.交叉熵在多分类问题中的使用"></a>3.交叉熵在多分类问题中的使用</h3><p>这里的多类别是指，每一张图像样本可以由多个类别，比如同时包含一只猫和一只狗，和单分类问题的标签不同，多分类的标签是n-hot的。比如一张图里面既有猫，又有狗，那么具体看例子：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -1342,71 +1385,51 @@ $$loss=-\frac{1}{m}\sum_{j=1}^m\sum_{i=1}^{n}y_{ji}log(\hat{y_{ji}})$$</p>
 </tr>
 </tbody>
 </table>
-<p>值得注意的是，这里的Pred不再是通过softmax计算的了，这里采用的是sigmoid激活函数，将每一个节点的输出归一化到0-1之间。所有Pred值的和也不再是1，换句话说，就是每一个Label都是独立分布的，相互之间没有影响。所以交叉熵在这里是单独对每一个节点进行计算，每一个节点只有两种可能值，所以是一个二项分布。对于这种只有两个结果0,1的分布，熵的计算可以进行简化，同样的，交叉熵的计算也可以简化，即：
-$$loss =-ylog(\hat{y})-(1-y)log(1-\hat{y})$$
-注意，上面式子只是针对一个节点的计算公式，这一点要和单分类的loss区分开来，例子中可以计算为：
-$$
+</div>
+<p>值得注意的是，这里的Pred不再是通过softmax计算的了，这里采用的是sigmoid激活函数，将每一个节点的输出归一化到0-1之间。所有Pred值的和也不再是1，换句话说，就是每一个Label都是独立分布的，相互之间没有影响。所以交叉熵在这里是单独对每一个节点进行计算，每一个节点只有两种可能值，所以是一个二项分布。对于这种只有两个结果0,1的分布，熵的计算可以进行简化，同样的，交叉熵的计算也可以简化，即：</p>
+<script type="math/tex; mode=display">loss =-ylog(\hat{y})-(1-y)log(1-\hat{y})</script><p>注意，上面式子只是针对一个节点的计算公式，这一点要和单分类的loss区分开来，例子中可以计算为：</p>
+<script type="math/tex; mode=display">
 \begin{eqnarray}
-loss_猫 &amp;=&amp;-1\times log(0.8)-(1-1)log(1-0.8)=-log(0.8)\
-loss_狗 &amp;=&amp;-1\times log(0.7)-(1-1)log(1-0.7)=-log(0.7)\
-loss_兔 &amp;=&amp;-0\times log(0.1)-(1-0)log(1-0.1)=-log(0.9)
-\end{eqnarray}
-$$
-单张样本的loss即为$loss = loss_猫+loss_狗+loss_兔$
-每一个batch的loss就是：
-$$loss =\sum_{j=1}^{m}\sum_{i=1}^{n}-y_{ji}log(\hat{y_{ji}})-(1-y_{ji})log(1-\hat{y_{ji}})$$
-式中m为当前batch的样本数量，n为类别数。</p>
-<h2>补充（sigmoid与softmax）</h2>
-<h3>1. 作用</h3>
-<p>sigmoid是一个激活函数，输入数据进行完线性变换后，都要进行一个非线性变换，原理就是计算sigmoid函数值，常用的激活函数还有tanh，relu等，sigmoid函数公式为：$f(x) =\frac{1}{1+e^{-x}}$，作用时将数值归一化到0-1之间。</p>
-<p>tensorflow中的接口示例如下：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">y = np.array([<span class="number">1.</span>,<span class="number">2.</span>,<span class="number">3.</span>,<span class="number">4.</span>])</span><br><span class="line">sigmoid = tf.nn.sigmoid(y).eval()</span><br><span class="line">print(sigmoid)</span><br><span class="line"><span class="comment"># [0.73105858 0.88079708 0.95257413 0.98201379]</span></span><br></pre></td></tr></table></figure></p>
-<p>softmax是网络结构输出层的一层，计算输出层的值。主要用于神经网络最后一层，作为输出层进行多分类，是Logistic二分类的推广。在Logistic回归中，loss函数是sigmoid交叉熵，所以loss公式为：
-$$H(X)=-p(x)log(p(x))-(1-p(x))log(1-p(x))$$</p>
-<p>其中$p(x)$为$f(x) =\frac{1}{1+e^{-\theta^{\mathrm{T}}x}}$。
-在softmax回归中，我们解决的事多分类问题，它的本质就是将一个K维的任意实数向量压缩（映射）成另一个K维的实数向量，其实向量中的每个元素取值都介于（0，1）之间，softmax函数形式如下：
-$$S_{i}=\frac{e^{V_{i}}}{\sum_{j}e^{V_{j}}}$$</p>
-<p>也就是说，是该元素的指数与所有元数指数的比值，这个定义非常直观，还有很多优点。</p>
+loss_猫 &=&-1\times log(0.8)-(1-1)log(1-0.8)=-log(0.8)\\
+loss_狗 &=&-1\times log(0.7)-(1-1)log(1-0.7)=-log(0.7)\\
+loss_兔 &=&-0\times log(0.1)-(1-0)log(1-0.1)=-log(0.9)
+\end{eqnarray}</script><p>单张样本的loss即为$loss = loss<em>猫+loss</em>狗+loss_兔$<br>每一个batch的loss就是：</p>
+<script type="math/tex; mode=display">loss =\sum_{j=1}^{m}\sum_{i=1}^{n}-y_{ji}log(\hat{y_{ji}})-(1-y_{ji})log(1-\hat{y_{ji}})</script><p>式中m为当前batch的样本数量，n为类别数。</p>
+<h2 id="补充（sigmoid与softmax）"><a href="#补充（sigmoid与softmax）" class="headerlink" title="补充（sigmoid与softmax）"></a>补充（sigmoid与softmax）</h2><h3 id="1-作用"><a href="#1-作用" class="headerlink" title="1. 作用"></a>1. 作用</h3><p>sigmoid是一个激活函数，输入数据进行完线性变换后，都要进行一个非线性变换，原理就是计算sigmoid函数值，常用的激活函数还有tanh，relu等，sigmoid函数公式为：$f(x) =\frac{1}{1+e^{-x}}$，作用时将数值归一化到0-1之间。</p>
+<p>tensorflow中的接口示例如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">y = np.array([<span class="number">1.</span>,<span class="number">2.</span>,<span class="number">3.</span>,<span class="number">4.</span>])</span><br><span class="line">sigmoid = tf.nn.sigmoid(y).eval()</span><br><span class="line">print(sigmoid)</span><br><span class="line"><span class="comment"># [0.73105858 0.88079708 0.95257413 0.98201379]</span></span><br></pre></td></tr></table></figure></p>
+<p>softmax是网络结构输出层的一层，计算输出层的值。主要用于神经网络最后一层，作为输出层进行多分类，是Logistic二分类的推广。在Logistic回归中，loss函数是sigmoid交叉熵，所以loss公式为：</p>
+<script type="math/tex; mode=display">H(X)=-p(x)log(p(x))-(1-p(x))log(1-p(x))</script><p>其中$p(x)$为$f(x) =\frac{1}{1+e^{-\theta^{\mathrm{T}}x}}$。<br>在softmax回归中，我们解决的事多分类问题，它的本质就是将一个K维的任意实数向量压缩（映射）成另一个K维的实数向量，其实向量中的每个元素取值都介于（0，1）之间，softmax函数形式如下：</p>
+<script type="math/tex; mode=display">S_{i}=\frac{e^{V_{i}}}{\sum_{j}e^{V_{j}}}</script><p>也就是说，是该元素的指数与所有元数指数的比值，这个定义非常直观，还有很多优点。</p>
 <blockquote>
 <ul>
 <li>计算与标注样本的差距</li>
 </ul>
 </blockquote>
-<p>在神经网络的计算当中，我们经常需要计算按照神经网络的正向传播计算的分数S1，和按照正确标注计算的分数S2，之间的差距，计算Loss，才能应用反向传播。Loss定义为交叉熵：
-$$loss=-\sum_{i=1}^{n}y_{ji}log(\hat{y_{ji}})$$</p>
-<p>其中$\hat{y}$就是softmax计算结果，这样的话，它占的比重越大，这个样本的Loss也就越小，这种定义符合我们的要求</p>
+<p>在神经网络的计算当中，我们经常需要计算按照神经网络的正向传播计算的分数S1，和按照正确标注计算的分数S2，之间的差距，计算Loss，才能应用反向传播。Loss定义为交叉熵：</p>
+<script type="math/tex; mode=display">loss=-\sum_{i=1}^{n}y_{ji}log(\hat{y_{ji}})</script><p>其中$\hat{y}$就是softmax计算结果，这样的话，它占的比重越大，这个样本的Loss也就越小，这种定义符合我们的要求</p>
 <blockquote>
 <ul>
 <li>计算上非常的方便</li>
 </ul>
 </blockquote>
-<p>我们对分类的Loss进行改进的时候，我们要通过梯度下降，每次优化一个step大小的梯度，我们应用链式法则对loss进行求导，最后的形式非常简单，过程如下，我们重新定义loss，a为拟合值，是关于参数输出$z_{i}$的函数，y为真实标签，则：
-$$C = -\sum_{i}y_{i}log{a_{i}}$$</p>
-<p>我们的目标是，求loss对于$z_{i}$的梯度：$\frac{\partial C}{\partial z_i}$，根据链式法则：
-$$\frac{\partial C}{\partial z_i} = \frac{\partial C}{\partial a_j} \frac{\partial a_j}{\partial z_i}$$</p>
-<p>有个人可能有疑问了，这里为什么是aj而不是ai，这里要看一下softmax的公式了，因为softmax公式的特性，它的分母包含了所有神经元的输出，所以，对于不等于i的其他输出里面，也包含着$z_{i}$，所有的a都要纳入到计算范围中，并且后面的计算可以看到需要分为i=j和i≠j两种情况求导。
-下面我们一个一个推：
-$$\frac{\partial C}{\partial a_j} = \frac{\partial (-\sum_j{y_j \log {a_j}})}{\partial a_j} = -\sum_j{y_j \frac{1}{a_j} }$$</p>
-<p>第二个稍微复杂一点：(除法的导数公式${\frac{u}{v}=\frac{u^{'}v-uv^{'}}{v^{2}} }$)</p>
+<p>我们对分类的Loss进行改进的时候，我们要通过梯度下降，每次优化一个step大小的梯度，我们应用链式法则对loss进行求导，最后的形式非常简单，过程如下，我们重新定义loss，a为拟合值，是关于参数输出$z_{i}$的函数，y为真实标签，则：</p>
+<script type="math/tex; mode=display">C = -\sum_{i}y_{i}log{a_{i}}</script><p>我们的目标是，求loss对于$z_{i}$的梯度：$\frac{\partial C}{\partial z_i}$，根据链式法则：</p>
+<script type="math/tex; mode=display">\frac{\partial C}{\partial z_i} = \frac{\partial C}{\partial a_j} \frac{\partial a_j}{\partial z_i}</script><p>有个人可能有疑问了，这里为什么是aj而不是ai，这里要看一下softmax的公式了，因为softmax公式的特性，它的分母包含了所有神经元的输出，所以，对于不等于i的其他输出里面，也包含着$z_{i}$，所有的a都要纳入到计算范围中，并且后面的计算可以看到需要分为i=j和i≠j两种情况求导。<br>下面我们一个一个推：</p>
+<script type="math/tex; mode=display">\frac{\partial C}{\partial a_j} = \frac{\partial (-\sum_j{y_j \log {a_j}})}{\partial a_j} = -\sum_j{y_j \frac{1}{a_j} }</script><p>第二个稍微复杂一点：(除法的导数公式${\frac{u}{v}=\frac{u^{‘}v-uv^{‘}}{v^{2}} }$)</p>
 <blockquote>
 <ul>
 <li>如果 $i=j$：</li>
 </ul>
 </blockquote>
-<p>$$\frac{\partial a_i}{\partial z_i} = \frac{\partial ( \frac{e^{z_i}}{\sum_k{e^{z_k}}})} {\partial z_i}= \frac{\sum_k{e^{z_k}e^{z_i} - (e^{z_i})^2}}{(\sum_k{e^{z_k} })^2 } = ( \frac{e^{z_i}}{\sum_k{e^{z_k}}})(1 - \frac{e^{z_i}}{\sum_k{e^{z_k}}}) = a_i(1-a_i)$$</p>
-<blockquote>
+<script type="math/tex; mode=display">\frac{\partial a_i}{\partial z_i} = \frac{\partial ( \frac{e^{z_i}}{\sum_k{e^{z_k}}})} {\partial z_i}= \frac{\sum_k{e^{z_k}e^{z_i} - (e^{z_i})^2}}{(\sum_k{e^{z_k} })^2 } = ( \frac{e^{z_i}}{\sum_k{e^{z_k}}})(1 - \frac{e^{z_i}}{\sum_k{e^{z_k}}}) = a_i(1-a_i)</script><blockquote>
 <ul>
 <li>如果 $i \neq j$：</li>
 </ul>
 </blockquote>
-<p>$$\frac{\partial a_j}{\partial z_i} = \frac{\partial ( \frac{e^{z_j}}{\sum_k{e^{z_k}}})} {\partial z_i} = -e^{z_j}(\frac{1}{\sum_k{e^{z_k}}})^2e^{z_i} = -a_ia_j$$</p>
-<p>ok,所有我们把上面的组合连起来：
-$$\frac{\partial C}{\partial z_i} =  (-\sum_j{y_j \frac{1}{a_j} })\frac{\partial a_j}{\partial z_i} = - \frac{y_i}{a_i}a_i(1-a_i) + \sum_{j\neq i} \frac{y_j}{a_j}a_ia_j = -y_i + y_ia_i + \sum_{j\neq i}y_ja_i = -y_i + a_i\sum_jy_j$$
-最后的结果看起来简单了很多，最后针对分类问题，我们给定的$y_{i}$只会是0或者1，因此，对于分类问题，这个梯度等于：
-$$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
-<p>举个例子，通过若干层的计算，最后得到的某个训练样本的向量的分数是*[ 1, 5, 3 ]<em>，那么概率分别就是</em>[ 0.015, 0.866, 0.117]<em>，如果这个样本正确的分类是第二个的话，那么计算出来的偏导就是</em>[0.015,0.866−1,0.117]=[0.015,−0.134,0.117]*，！然后再根据这个进行back propagation就可以了。</p>
-<p>tensorflow中关于softmax的使用：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">y = np.array([<span class="number">1.</span>,<span class="number">2.</span>,<span class="number">3.</span>,<span class="number">4.</span>])</span><br><span class="line">np.exp(y) / np.sum(np.exp(y))</span><br><span class="line"><span class="comment"># array([0.0320586 , 0.08714432, 0.23688282, 0.64391426])</span></span><br><span class="line">softmax = tf.nn.softmax(y).eval()</span><br><span class="line">print(softmax)</span><br><span class="line"><span class="comment"># [0.0320586  0.08714432 0.23688282 0.64391426]</span></span><br><span class="line">tf.argmax(softmax, axis=<span class="number">0</span>).eval()</span><br><span class="line"><span class="comment"># 3</span></span><br></pre></td></tr></table></figure></p>
+<script type="math/tex; mode=display">\frac{\partial a_j}{\partial z_i} = \frac{\partial ( \frac{e^{z_j}}{\sum_k{e^{z_k}}})} {\partial z_i} = -e^{z_j}(\frac{1}{\sum_k{e^{z_k}}})^2e^{z_i} = -a_ia_j</script><p>ok,所有我们把上面的组合连起来：</p>
+<script type="math/tex; mode=display">\frac{\partial C}{\partial z_i} =  (-\sum_j{y_j \frac{1}{a_j} })\frac{\partial a_j}{\partial z_i} = - \frac{y_i}{a_i}a_i(1-a_i) + \sum_{j\neq i} \frac{y_j}{a_j}a_ia_j = -y_i + y_ia_i + \sum_{j\neq i}y_ja_i = -y_i + a_i\sum_jy_j</script><p>最后的结果看起来简单了很多，最后针对分类问题，我们给定的$y_{i}$只会是0或者1，因此，对于分类问题，这个梯度等于：</p>
+<script type="math/tex; mode=display">\frac{\partial C}{\partial z_i} = a_i - y_i</script><p>举个例子，通过若干层的计算，最后得到的某个训练样本的向量的分数是<em>[ 1, 5, 3 ]</em>，那么概率分别就是<em>[ 0.015, 0.866, 0.117]</em>，如果这个样本正确的分类是第二个的话，那么计算出来的偏导就是<em>[0.015,0.866−1,0.117]=[0.015,−0.134,0.117]</em>，！然后再根据这个进行back propagation就可以了。</p>
+<p>tensorflow中关于softmax的使用：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">y = np.array([<span class="number">1.</span>,<span class="number">2.</span>,<span class="number">3.</span>,<span class="number">4.</span>])</span><br><span class="line">np.exp(y) / np.sum(np.exp(y))</span><br><span class="line"><span class="comment"># array([0.0320586 , 0.08714432, 0.23688282, 0.64391426])</span></span><br><span class="line">softmax = tf.nn.softmax(y).eval()</span><br><span class="line">print(softmax)</span><br><span class="line"><span class="comment"># [0.0320586  0.08714432 0.23688282 0.64391426]</span></span><br><span class="line">tf.argmax(softmax, axis=<span class="number">0</span>).eval()</span><br><span class="line"><span class="comment"># 3</span></span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -1558,9 +1581,7 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
       
         
           
-            <h2>python基础</h2>
-<h3>1.Python有6种标准数据类型</h3>
-<blockquote>
+            <h2 id="python基础"><a href="#python基础" class="headerlink" title="python基础"></a>python基础</h2><h3 id="1-Python有6种标准数据类型"><a href="#1-Python有6种标准数据类型" class="headerlink" title="1.Python有6种标准数据类型"></a>1.Python有6种标准数据类型</h3><blockquote>
 <ul>
 <li>数字</li>
 <li>布尔（Boolean）</li>
@@ -1570,8 +1591,7 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
 <li>字典（dict）</li>
 </ul>
 </blockquote>
-<h3>2.Python支持4种数字类型</h3>
-<blockquote>
+<h3 id="2-Python支持4种数字类型"><a href="#2-Python支持4种数字类型" class="headerlink" title="2.Python支持4种数字类型"></a>2.Python支持4种数字类型</h3><blockquote>
 <ul>
 <li>int（整形）</li>
 <li>long（长整型，python3取消，变为int）</li>
@@ -1579,28 +1599,18 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
 <li>complex（复数）</li>
 </ul>
 </blockquote>
-<h3>3.输入与输出</h3>
-<blockquote>
+<h3 id="3-输入与输出"><a href="#3-输入与输出" class="headerlink" title="3.输入与输出"></a>3.输入与输出</h3><blockquote>
 <ul>
-<li>print不换行: print(x, end=&quot; &quot;)</li>
-<li>input(&quot;请输入x值：&quot;)</li>
+<li>print不换行: print(x, end=” “)</li>
+<li>input(“请输入x值：”)</li>
 <li>python保留字</li>
 </ul>
 </blockquote>
-<h3>4.数据结构 List</h3>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">lst = [ <span class="string">'abcd'</span>, <span class="number">786</span> , <span class="number">2.23</span>, <span class="string">'john'</span>, <span class="number">70.2</span> ]</span><br><span class="line">print(lst)</span><br><span class="line">print(lst[<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 向后添加元素</span></span><br><span class="line">lst.append(<span class="string">'hello'</span>)</span><br><span class="line">print(lst)</span><br><span class="line"><span class="comment"># 删除最后一个元素</span></span><br><span class="line">lst.pop()</span><br><span class="line">print(lst)</span><br><span class="line"><span class="comment"># 删除内容为'abcd'的元素</span></span><br><span class="line">lst.remove(<span class="string">'abcd'</span>)</span><br><span class="line">print(lst)</span><br><span class="line">list_ = [<span class="number">2</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">1</span>,<span class="number">4</span>,<span class="number">6</span>]</span><br><span class="line"><span class="comment"># 按数字大小进行排序</span></span><br><span class="line">list_.sort()</span><br><span class="line">print(list_)</span><br><span class="line"></span><br><span class="line"><span class="comment">#列表的便利</span></span><br><span class="line">list_ = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> list_:</span><br><span class="line">    print(i)</span><br><span class="line"></span><br><span class="line">i = <span class="number">0</span></span><br><span class="line"><span class="keyword">while</span> i &lt; len(list_):</span><br><span class="line">    print(list_[i])</span><br><span class="line">    i+=<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
-<p>元组 tuple，与列表基本相同，区别是使用()而不是[],而且元组是只读的
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tp = ( <span class="string">'abcd'</span>, <span class="number">786</span> , <span class="number">2.23</span>, <span class="string">'john'</span>, <span class="number">70.2</span>  )</span><br><span class="line">print(tp)</span><br><span class="line">print(tp[<span class="number">2</span>])</span><br></pre></td></tr></table></figure></p>
-<p>切片 字符串和列表都存在切片操作
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">"abcdef"</span></span><br><span class="line">b = [<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>,<span class="string">'d'</span>,<span class="string">'e'</span>,<span class="string">'f'</span>]</span><br><span class="line"><span class="comment">#len方法可以计算字符串、列表的长度</span></span><br><span class="line">len_ = len(a)</span><br><span class="line">print(len_)</span><br><span class="line"><span class="comment"># 完整格式</span></span><br><span class="line">print(a[<span class="number">0</span>:<span class="number">6</span>:<span class="number">1</span>])</span><br><span class="line">print(b[<span class="number">0</span>:<span class="number">6</span>:<span class="number">1</span>])</span><br><span class="line"><span class="comment"># 简写格式</span></span><br><span class="line">print(a[<span class="number">1</span>:<span class="number">4</span>])</span><br><span class="line">print(b[<span class="number">1</span>:<span class="number">4</span>])</span><br><span class="line"><span class="comment"># 设置步进,不写默认最前到最后</span></span><br><span class="line">print(a[::<span class="number">2</span>])</span><br><span class="line">print(b[::<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 逆步进(倒序)</span></span><br><span class="line">print(a[::<span class="number">-1</span>])</span><br><span class="line">print(b[::<span class="number">-1</span>])</span><br><span class="line"><span class="comment"># 前五个2步进</span></span><br><span class="line">print(a[<span class="number">0</span>:<span class="number">5</span>:<span class="number">2</span>])</span><br><span class="line">print(b[<span class="number">0</span>:<span class="number">5</span>:<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 前3个后3个</span></span><br><span class="line">print(a[:<span class="number">-3</span>])</span><br><span class="line">print(a[<span class="number">-3</span>:])</span><br></pre></td></tr></table></figure></p>
-<p>字典
-字典是另一种可变容器模型，且可存储任意类型对象。
-格式如下所示：d = {key1 : value1, key2 : value2 }
-键必须是唯一的，但值则不必。
-值可以取任何数据类型，但键必须是不可变数据类型，如字符串，数字或元组。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">dict = &#123;<span class="string">'Name'</span>: <span class="string">'Runoob'</span>, <span class="string">'Age'</span>: <span class="number">7</span>, <span class="string">'Class'</span>: <span class="string">'First'</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取元素</span></span><br><span class="line">name1 = dict[<span class="string">'Name'</span>]</span><br><span class="line"><span class="comment"># get第二个参数默认是None</span></span><br><span class="line">name2 = dict.get(<span class="string">'Name'</span>)</span><br><span class="line">print(name1)</span><br><span class="line">print(name2)</span><br><span class="line"><span class="comment"># 添加元素</span></span><br><span class="line">dict[<span class="string">'Address'</span>] = <span class="string">'beijing'</span></span><br><span class="line">print(dict)</span><br><span class="line"><span class="comment"># 修改元素，直接用键值覆盖</span></span><br><span class="line">dict[<span class="string">'Name'</span>] = <span class="string">'xiaotian'</span></span><br><span class="line">print(dict)</span><br><span class="line"><span class="comment"># 删除字典元素</span></span><br><span class="line"><span class="keyword">del</span> dict[<span class="string">'Address'</span>]</span><br><span class="line">print(dict)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字典的遍历</span></span><br><span class="line">dict_ = &#123;<span class="string">'Name'</span>: <span class="string">'Runoob'</span>, <span class="string">'Age'</span>: <span class="number">7</span>, <span class="string">'Class'</span>: <span class="string">'First'</span>&#125;</span><br><span class="line"><span class="comment"># 遍历keys(键)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.keys():</span><br><span class="line">    print(i)</span><br><span class="line">print(<span class="string">'---------------------------'</span>)</span><br><span class="line"><span class="comment"># 遍历values(值)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.values():</span><br><span class="line">    print(i)</span><br><span class="line">print(<span class="string">'---------------------------'</span>)</span><br><span class="line"><span class="comment"># 遍历items(键、值)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.items():</span><br><span class="line">    print(i)</span><br><span class="line"><span class="keyword">for</span> key,value <span class="keyword">in</span> dict_.items():</span><br><span class="line">    <span class="keyword">print</span> (key,end=<span class="string">'-'</span>)</span><br><span class="line">    <span class="keyword">print</span> (value)</span><br></pre></td></tr></table></figure></p>
-<h2>函数</h2>
-<p>在Python之中定义函数要遵循以下几点：</p>
+<h3 id="4-数据结构-List"><a href="#4-数据结构-List" class="headerlink" title="4.数据结构 List"></a>4.数据结构 List</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">lst = [ <span class="string">'abcd'</span>, <span class="number">786</span> , <span class="number">2.23</span>, <span class="string">'john'</span>, <span class="number">70.2</span> ]</span><br><span class="line">print(lst)</span><br><span class="line">print(lst[<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 向后添加元素</span></span><br><span class="line">lst.append(<span class="string">'hello'</span>)</span><br><span class="line">print(lst)</span><br><span class="line"><span class="comment"># 删除最后一个元素</span></span><br><span class="line">lst.pop()</span><br><span class="line">print(lst)</span><br><span class="line"><span class="comment"># 删除内容为'abcd'的元素</span></span><br><span class="line">lst.remove(<span class="string">'abcd'</span>)</span><br><span class="line">print(lst)</span><br><span class="line">list_ = [<span class="number">2</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">1</span>,<span class="number">4</span>,<span class="number">6</span>]</span><br><span class="line"><span class="comment"># 按数字大小进行排序</span></span><br><span class="line">list_.sort()</span><br><span class="line">print(list_)</span><br><span class="line"></span><br><span class="line"><span class="comment">#列表的便利</span></span><br><span class="line">list_ = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> list_:</span><br><span class="line">    print(i)</span><br><span class="line"></span><br><span class="line">i = <span class="number">0</span></span><br><span class="line"><span class="keyword">while</span> i &lt; len(list_):</span><br><span class="line">    print(list_[i])</span><br><span class="line">    i+=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>元组 tuple，与列表基本相同，区别是使用()而不是[],而且元组是只读的<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tp = ( <span class="string">'abcd'</span>, <span class="number">786</span> , <span class="number">2.23</span>, <span class="string">'john'</span>, <span class="number">70.2</span>  )</span><br><span class="line">print(tp)</span><br><span class="line">print(tp[<span class="number">2</span>])</span><br></pre></td></tr></table></figure></p>
+<p>切片 字符串和列表都存在切片操作<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">"abcdef"</span></span><br><span class="line">b = [<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>,<span class="string">'d'</span>,<span class="string">'e'</span>,<span class="string">'f'</span>]</span><br><span class="line"><span class="comment">#len方法可以计算字符串、列表的长度</span></span><br><span class="line">len_ = len(a)</span><br><span class="line">print(len_)</span><br><span class="line"><span class="comment"># 完整格式</span></span><br><span class="line">print(a[<span class="number">0</span>:<span class="number">6</span>:<span class="number">1</span>])</span><br><span class="line">print(b[<span class="number">0</span>:<span class="number">6</span>:<span class="number">1</span>])</span><br><span class="line"><span class="comment"># 简写格式</span></span><br><span class="line">print(a[<span class="number">1</span>:<span class="number">4</span>])</span><br><span class="line">print(b[<span class="number">1</span>:<span class="number">4</span>])</span><br><span class="line"><span class="comment"># 设置步进,不写默认最前到最后</span></span><br><span class="line">print(a[::<span class="number">2</span>])</span><br><span class="line">print(b[::<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 逆步进(倒序)</span></span><br><span class="line">print(a[::<span class="number">-1</span>])</span><br><span class="line">print(b[::<span class="number">-1</span>])</span><br><span class="line"><span class="comment"># 前五个2步进</span></span><br><span class="line">print(a[<span class="number">0</span>:<span class="number">5</span>:<span class="number">2</span>])</span><br><span class="line">print(b[<span class="number">0</span>:<span class="number">5</span>:<span class="number">2</span>])</span><br><span class="line"><span class="comment"># 前3个后3个</span></span><br><span class="line">print(a[:<span class="number">-3</span>])</span><br><span class="line">print(a[<span class="number">-3</span>:])</span><br></pre></td></tr></table></figure></p>
+<p>字典<br>字典是另一种可变容器模型，且可存储任意类型对象。<br>格式如下所示：d = {key1 : value1, key2 : value2 }<br>键必须是唯一的，但值则不必。<br>值可以取任何数据类型，但键必须是不可变数据类型，如字符串，数字或元组。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">dict = &#123;<span class="string">'Name'</span>: <span class="string">'Runoob'</span>, <span class="string">'Age'</span>: <span class="number">7</span>, <span class="string">'Class'</span>: <span class="string">'First'</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取元素</span></span><br><span class="line">name1 = dict[<span class="string">'Name'</span>]</span><br><span class="line"><span class="comment"># get第二个参数默认是None</span></span><br><span class="line">name2 = dict.get(<span class="string">'Name'</span>)</span><br><span class="line">print(name1)</span><br><span class="line">print(name2)</span><br><span class="line"><span class="comment"># 添加元素</span></span><br><span class="line">dict[<span class="string">'Address'</span>] = <span class="string">'beijing'</span></span><br><span class="line">print(dict)</span><br><span class="line"><span class="comment"># 修改元素，直接用键值覆盖</span></span><br><span class="line">dict[<span class="string">'Name'</span>] = <span class="string">'xiaotian'</span></span><br><span class="line">print(dict)</span><br><span class="line"><span class="comment"># 删除字典元素</span></span><br><span class="line"><span class="keyword">del</span> dict[<span class="string">'Address'</span>]</span><br><span class="line">print(dict)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字典的遍历</span></span><br><span class="line">dict_ = &#123;<span class="string">'Name'</span>: <span class="string">'Runoob'</span>, <span class="string">'Age'</span>: <span class="number">7</span>, <span class="string">'Class'</span>: <span class="string">'First'</span>&#125;</span><br><span class="line"><span class="comment"># 遍历keys(键)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.keys():</span><br><span class="line">    print(i)</span><br><span class="line">print(<span class="string">'---------------------------'</span>)</span><br><span class="line"><span class="comment"># 遍历values(值)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.values():</span><br><span class="line">    print(i)</span><br><span class="line">print(<span class="string">'---------------------------'</span>)</span><br><span class="line"><span class="comment"># 遍历items(键、值)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> dict_.items():</span><br><span class="line">    print(i)</span><br><span class="line"><span class="keyword">for</span> key,value <span class="keyword">in</span> dict_.items():</span><br><span class="line">    <span class="keyword">print</span> (key,end=<span class="string">'-'</span>)</span><br><span class="line">    <span class="keyword">print</span> (value)</span><br></pre></td></tr></table></figure></p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><p>在Python之中定义函数要遵循以下几点：</p>
 <blockquote>
 <ul>
 <li>python中定义函数使用 <strong>def</strong> 关键字，后面接着函数名称和括号(),最后跟着冒号</li>
@@ -1610,8 +1620,7 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
 <li>return 可以用于返回函数返回值或者表达式，return后面什么都不写与 return None 或者不写return 等价</li>
 </ul>
 </blockquote>
-<h3>1.参数</h3>
-<p>调用参数的时候可以使用以下几种参数：</p>
+<h3 id="1-参数"><a href="#1-参数" class="headerlink" title="1.参数"></a>1.参数</h3><p>调用参数的时候可以使用以下几种参数：</p>
 <blockquote>
 <ul>
 <li>必要(required)参数</li>
@@ -1620,36 +1629,24 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
 <li>变长(variable-length)参数</li>
 </ul>
 </blockquote>
-<p>必要参数是指必须按照函数定义的参数列表的定义，按照顺序传入，如change_list函数就必须传入mylist参数,如果没有按照要求进行传递参数，将会报错：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">change_list</span><span class="params">(mylist)</span>:</span></span><br><span class="line">    mylist.append(<span class="string">'test'</span>)</span><br></pre></td></tr></table></figure></p>
-<p>当使用关键字参数对函数进行调用的时候，要按照函数定义的参数名进行赋值，这样允许不按照函数定义的参数顺序进行赋值，因为Python解释器这是可以将参数与传入变量进行对应。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a, b)</span>:</span></span><br><span class="line">    print(a)</span><br><span class="line">    print(b)</span><br><span class="line">test(b=<span class="number">2</span>, a=<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
-<p>默认参数指的是当参数的值没有在调用时指定的话，函数将为参数赋值一个预先定义好的值，&lt;font color='red'&gt;默认参数的位置应当位于参数列表的最后&lt;/font&gt;：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a, b=<span class="number">5</span>)</span>:</span></span><br><span class="line">    print(a)</span><br><span class="line">    print(b)</span><br><span class="line">test(<span class="number">1</span>)</span><br><span class="line">test(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<p>当函数需要处理的变量的数目不确定的时候可以使用变长参数，变长参数在函数定义的时候名字没有预先确定，在定义函数的时候在变量前面增加一个星号（*）表示这是一个变长变量：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># *args接收单个参数</span></span><br><span class="line"><span class="comment"># **kwargs接收字典型键值对</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">printinfo</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">    print(args)</span><br><span class="line">    print(kwargs)</span><br><span class="line">printinfo(<span class="number">1</span>,<span class="string">'asdas'</span>,name=<span class="string">'asd'</span>,age=<span class="number">12</span>)</span><br></pre></td></tr></table></figure></p>
-<h3>2.全局变量与局部变量</h3>
-<p>在函数体中定义的变量具有局部作用域，他们只能在定义他们的函数之内被访问；全局变量可以在程序内被所有的函数访问。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果在局部使用全局变量，不加global视为在局部新建一个变量，与原变量地址空间不同。</span></span><br><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    a = <span class="number">100</span></span><br><span class="line">    print(a)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加global，标记为全局变量</span></span><br><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> a</span><br><span class="line">    a = <span class="number">100</span></span><br><span class="line">    print(a)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    num = a</span><br><span class="line">    print(num)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure></p>
-<h3>3.参数传递</h3>
-<p>python中参数的传递都是引用的传递，传递的是地址空间，也可以说传递的是变量所占的地址空间
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">change_list</span><span class="params">(mylist,str_)</span>:</span></span><br><span class="line">    mylist.append(<span class="string">'test'</span>)</span><br><span class="line">    print(<span class="string">'Inside function &#123;&#125;'</span>.format(mylist))</span><br><span class="line">    <span class="comment"># a指向传过来的str_的地址空间</span></span><br><span class="line">    str_ = str_ + <span class="string">'def'</span></span><br><span class="line">    print(str_)</span><br><span class="line">lst = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line">b = <span class="string">'abc'</span> </span><br><span class="line">change_list(lst,b)</span><br><span class="line"><span class="comment"># 经过函数的处理，lst最后增加了一个元素</span></span><br><span class="line"><span class="comment"># 经过函数的处理，a,b都指向'abc'的地址空间</span></span><br><span class="line">print(lst)</span><br><span class="line">print(b)</span><br></pre></td></tr></table></figure></p>
-<h3>4.匿名函数</h3>
-<p>匿名函数的定义方法与前面讲的传统的使用<code>def</code>的方法是不同，使用<code>lambda</code>关键词定义匿名函数。</p>
+<p>必要参数是指必须按照函数定义的参数列表的定义，按照顺序传入，如change_list函数就必须传入mylist参数,如果没有按照要求进行传递参数，将会报错：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">change_list</span><span class="params">(mylist)</span>:</span></span><br><span class="line">    mylist.append(<span class="string">'test'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>当使用关键字参数对函数进行调用的时候，要按照函数定义的参数名进行赋值，这样允许不按照函数定义的参数顺序进行赋值，因为Python解释器这是可以将参数与传入变量进行对应。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a, b)</span>:</span></span><br><span class="line">    print(a)</span><br><span class="line">    print(b)</span><br><span class="line">test(b=<span class="number">2</span>, a=<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<p>默认参数指的是当参数的值没有在调用时指定的话，函数将为参数赋值一个预先定义好的值，<font color="red">默认参数的位置应当位于参数列表的最后</font>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a, b=<span class="number">5</span>)</span>:</span></span><br><span class="line">    print(a)</span><br><span class="line">    print(b)</span><br><span class="line">test(<span class="number">1</span>)</span><br><span class="line">test(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<p>当函数需要处理的变量的数目不确定的时候可以使用变长参数，变长参数在函数定义的时候名字没有预先确定，在定义函数的时候在变量前面增加一个星号（*）表示这是一个变长变量：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># *args接收单个参数</span></span><br><span class="line"><span class="comment"># **kwargs接收字典型键值对</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">printinfo</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">    print(args)</span><br><span class="line">    print(kwargs)</span><br><span class="line">printinfo(<span class="number">1</span>,<span class="string">'asdas'</span>,name=<span class="string">'asd'</span>,age=<span class="number">12</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-全局变量与局部变量"><a href="#2-全局变量与局部变量" class="headerlink" title="2.全局变量与局部变量"></a>2.全局变量与局部变量</h3><p>在函数体中定义的变量具有局部作用域，他们只能在定义他们的函数之内被访问；全局变量可以在程序内被所有的函数访问。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果在局部使用全局变量，不加global视为在局部新建一个变量，与原变量地址空间不同。</span></span><br><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    a = <span class="number">100</span></span><br><span class="line">    print(a)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加global，标记为全局变量</span></span><br><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> a</span><br><span class="line">    a = <span class="number">100</span></span><br><span class="line">    print(a)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">50</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    num = a</span><br><span class="line">    print(num)</span><br><span class="line">test()</span><br><span class="line">print(a)</span><br></pre></td></tr></table></figure>
+<h3 id="3-参数传递"><a href="#3-参数传递" class="headerlink" title="3.参数传递"></a>3.参数传递</h3><p>python中参数的传递都是引用的传递，传递的是地址空间，也可以说传递的是变量所占的地址空间<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">change_list</span><span class="params">(mylist,str_)</span>:</span></span><br><span class="line">    mylist.append(<span class="string">'test'</span>)</span><br><span class="line">    print(<span class="string">'Inside function &#123;&#125;'</span>.format(mylist))</span><br><span class="line">    <span class="comment"># a指向传过来的str_的地址空间</span></span><br><span class="line">    str_ = str_ + <span class="string">'def'</span></span><br><span class="line">    print(str_)</span><br><span class="line">lst = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line">b = <span class="string">'abc'</span> </span><br><span class="line">change_list(lst,b)</span><br><span class="line"><span class="comment"># 经过函数的处理，lst最后增加了一个元素</span></span><br><span class="line"><span class="comment"># 经过函数的处理，a,b都指向'abc'的地址空间</span></span><br><span class="line">print(lst)</span><br><span class="line">print(b)</span><br></pre></td></tr></table></figure></p>
+<h3 id="4-匿名函数"><a href="#4-匿名函数" class="headerlink" title="4.匿名函数"></a>4.匿名函数</h3><p>匿名函数的定义方法与前面讲的传统的使用<code>def</code>的方法是不同，使用<code>lambda</code>关键词定义匿名函数。</p>
 <blockquote>
 <ul>
 <li>匿名函数可以接收任意数目的参数，但是返回值只能是一个值或者表达式，他们不能包含命令或者多个表达式。</li>
 <li>lambda 函数具有自己的命名空间，他们除了参数列表中的变量以及全局变量之外无法访问其他的变量。</li>
-<li>lambda 函数无法直接被用来打印变量，lambda 函数需要一个表达式
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sm = <span class="keyword">lambda</span> x, y: x + y</span><br><span class="line">res = sm(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">print(res)</span><br></pre></td></tr></table></figure></li>
+<li>lambda 函数无法直接被用来打印变量，lambda 函数需要一个表达式<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sm = <span class="keyword">lambda</span> x, y: x + y</span><br><span class="line">res = sm(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">print(res)</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </blockquote>
-<h2>文件操作</h2>
-<h3>1.open函数</h3>
-<p>open函数被用来打开或者创建文件，它将会返回一个file对象。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file object = open(file_name [, access_mode][, buffering][,encoding])</span><br></pre></td></tr></table></figure></p>
+<h2 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h2><h3 id="1-open函数"><a href="#1-open函数" class="headerlink" title="1.open函数"></a>1.open函数</h3><p>open函数被用来打开或者创建文件，它将会返回一个file对象。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file object = open(file_name [, access_mode][, buffering][,encoding])</span><br></pre></td></tr></table></figure></p>
 <p>有几种常见的模式：</p>
 <blockquote>
 <ul>
@@ -1669,83 +1666,43 @@ $$\frac{\partial C}{\partial z_i} = a_i - y_i$$</p>
 </blockquote>
 <p>buffer是读写的缓冲区间，有可以选三种值: 0 表示不适用buffer，1 表示 buffer 文件中的一行，其余正整数表示buffer的字节数</p>
 <p>encoding是指明对文件编码，仅适用于文本文件。如果不明编码方式，默认是使用locale.getpreferredencoding()函数返回的编码方式。</p>
-<h3>2.file对象属性</h3>
-<blockquote>
+<h3 id="2-file对象属性"><a href="#2-file对象属性" class="headerlink" title="2.file对象属性"></a>2.file对象属性</h3><blockquote>
 <ul>
-<li>file.close
-返回文件是否关闭</li>
-<li>file.mode
-返回打开文件的模式</li>
-<li>file.name
-返回文件的名字
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"wb"</span>)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Name of the file: "</span>, fo.name)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Closed or not : "</span>, fo.closed)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Opening mode : "</span>, fo.mode)</span><br><span class="line">fo.close()</span><br></pre></td></tr></table></figure></li>
+<li>file.close<br>  返回文件是否关闭</li>
+<li>file.mode<br>  返回打开文件的模式</li>
+<li>file.name<br>  返回文件的名字<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"wb"</span>)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Name of the file: "</span>, fo.name)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Closed or not : "</span>, fo.closed)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"Opening mode : "</span>, fo.mode)</span><br><span class="line">fo.close()</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </blockquote>
-<p>close()方法
-file对象的close()方法用于将没有写入文件的信息写入文件以后关闭文件，&lt;font color='red'&gt;在打开文件以后要记得关闭文件。&lt;/font&gt;</p>
-<h3>3.read()和write()</h3>
-<p>file 对象可以使用 read() 对文件的内容进行读取，在使用read()对文件进行读取的时候会一次性的读取文件的全部内容。还可以使用readline()，每次读取文件的一行，readlines()则可以一次读取文件中的全部行，并且返回一个列表。</p>
+<p>close()方法<br>file对象的close()方法用于将没有写入文件的信息写入文件以后关闭文件，<font color="red">在打开文件以后要记得关闭文件。</font></p>
+<h3 id="3-read-和write"><a href="#3-read-和write" class="headerlink" title="3.read()和write()"></a>3.read()和write()</h3><p>file 对象可以使用 read() 对文件的内容进行读取，在使用read()对文件进行读取的时候会一次性的读取文件的全部内容。还可以使用readline()，每次读取文件的一行，readlines()则可以一次读取文件中的全部行，并且返回一个列表。</p>
 <p>write() 文件可以用于将内容写入文件，在写完文件之后一定要记得使用close()方法保证对于文件的更改已经写入了硬盘。</p>
-<p>在对文件进行读写操作的时候，常用的一种方式是使用<code>with</code>，这样Python在对文件读写完成后会自动调用<code>close()</code>方法:
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"w+"</span>)</span><br><span class="line">fo.write(<span class="string">"hello world"</span>)</span><br><span class="line">fo.close()</span><br><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"r"</span>)</span><br><span class="line">t = fo.read()</span><br><span class="line">print(t)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"foo.txt"</span>, <span class="string">"w+"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">        f.write(str(i) + <span class="string">'\n'</span>)</span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"foo.txt"</span>, <span class="string">"r"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    print(f.readlines())</span><br></pre></td></tr></table></figure></p>
-<h2>Python 进阶</h2>
-<h3>1.生成器</h3>
-<p>通过列表生成式，我们可以直接创建一个列表。但是，受到内存限制，列表容量肯定是有限的。而且，创建一个包含100万个元素的列表，不仅占用很大的存储空间，如果我们仅仅需要访问前面几个元素，那后面绝大多数元素占用的空间都白白浪费了。所以，如果列表元素可以按照某种算法推算出来，那我们是否可以在循环的过程中不断推算出后续的元素呢？这样就不必创建完整的list，从而节省大量的空间。</p>
-<p>在Python中，这种一边循环一边计算的机制，称为生成器generator。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这是一个列表生成式</span></span><br><span class="line">L = [ x*<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">5</span>)]</span><br><span class="line"><span class="comment"># 最简单的生成器写法</span></span><br><span class="line">G = ( x*<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">5</span>))</span><br><span class="line">print(type(L))</span><br><span class="line">print(type(G))</span><br><span class="line">print(next(G))</span><br><span class="line">print(next(G))</span><br><span class="line">print(next(G))</span><br><span class="line"><span class="comment"># send输入高级用法</span></span><br><span class="line">print(G.send(<span class="keyword">None</span>))</span><br></pre></td></tr></table></figure></p>
-<p>&lt;font color='red'&gt;经常我们的生成的生成器不会使用next()，而是直接使用for循环遍历，而生成器的写法也就是将函数的return变成yield，我们后面的AI学习中可能遇到很大的数据量，因此生成器是我们必不可少的工具&lt;/font&gt;
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过生成器实现斐波那契数列</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(times)</span>:</span></span><br><span class="line">    n = <span class="number">0</span></span><br><span class="line">    a,b = <span class="number">0</span>,<span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> n&lt;times:</span><br><span class="line">        <span class="keyword">yield</span> b</span><br><span class="line">        a,b = b,a+b</span><br><span class="line">        n+=<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
-<h3>2. 迭代器</h3>
-<p>迭代是访问集合元素的一种方式。迭代器是一个可以记住遍历的位置的对象。迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束。迭代器只能往前不会后退。
-1、可迭代对象
-可以直接作用于 for 循环的数据类型有以下几种：</p>
+<p>在对文件进行读写操作的时候，常用的一种方式是使用<code>with</code>，这样Python在对文件读写完成后会自动调用<code>close()</code>方法:<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"w+"</span>)</span><br><span class="line">fo.write(<span class="string">"hello world"</span>)</span><br><span class="line">fo.close()</span><br><span class="line">fo = open(<span class="string">"foo.txt"</span>, <span class="string">"r"</span>)</span><br><span class="line">t = fo.read()</span><br><span class="line">print(t)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"foo.txt"</span>, <span class="string">"w+"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">        f.write(str(i) + <span class="string">'\n'</span>)</span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"foo.txt"</span>, <span class="string">"r"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    print(f.readlines())</span><br></pre></td></tr></table></figure></p>
+<h2 id="Python-进阶"><a href="#Python-进阶" class="headerlink" title="Python 进阶"></a>Python 进阶</h2><h3 id="1-生成器"><a href="#1-生成器" class="headerlink" title="1.生成器"></a>1.生成器</h3><p>通过列表生成式，我们可以直接创建一个列表。但是，受到内存限制，列表容量肯定是有限的。而且，创建一个包含100万个元素的列表，不仅占用很大的存储空间，如果我们仅仅需要访问前面几个元素，那后面绝大多数元素占用的空间都白白浪费了。所以，如果列表元素可以按照某种算法推算出来，那我们是否可以在循环的过程中不断推算出后续的元素呢？这样就不必创建完整的list，从而节省大量的空间。</p>
+<p>在Python中，这种一边循环一边计算的机制，称为生成器generator。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这是一个列表生成式</span></span><br><span class="line">L = [ x*<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">5</span>)]</span><br><span class="line"><span class="comment"># 最简单的生成器写法</span></span><br><span class="line">G = ( x*<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">5</span>))</span><br><span class="line">print(type(L))</span><br><span class="line">print(type(G))</span><br><span class="line">print(next(G))</span><br><span class="line">print(next(G))</span><br><span class="line">print(next(G))</span><br><span class="line"><span class="comment"># send输入高级用法</span></span><br><span class="line">print(G.send(<span class="keyword">None</span>))</span><br></pre></td></tr></table></figure></p>
+<p><font color="red">经常我们的生成的生成器不会使用next()，而是直接使用for循环遍历，而生成器的写法也就是将函数的return变成yield，我们后面的AI学习中可能遇到很大的数据量，因此生成器是我们必不可少的工具</font><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过生成器实现斐波那契数列</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fib</span><span class="params">(times)</span>:</span></span><br><span class="line">    n = <span class="number">0</span></span><br><span class="line">    a,b = <span class="number">0</span>,<span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> n&lt;times:</span><br><span class="line">        <span class="keyword">yield</span> b</span><br><span class="line">        a,b = b,a+b</span><br><span class="line">        n+=<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="2-迭代器"><a href="#2-迭代器" class="headerlink" title="2. 迭代器"></a>2. 迭代器</h3><p>迭代是访问集合元素的一种方式。迭代器是一个可以记住遍历的位置的对象。迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束。迭代器只能往前不会后退。<br>1、可迭代对象<br>可以直接作用于 for 循环的数据类型有以下几种：</p>
 <blockquote>
 <ul>
 <li>一类是集合数据类型，如 list 、 tuple 、 dict 、 set 、 str 等；</li>
 <li>一类是 generator ，包括生成器和带 yield 的generator function。</li>
 </ul>
 </blockquote>
-<p>这些可以直接作用于 for 循环的对象统称为可迭代对象： Iterable &lt;font color='red'&gt;迭代器都是可迭代对象&lt;/font&gt;
-2、迭代器
-可以被next()函数调用并不断返回下一个值的对象称为迭代器：Iterator。
-&lt;font color='red'&gt;生成器都是迭代器&lt;/font&gt;
-3、iter()函数
-生成器都是 Iterator 对象，但 list 、 dict 、 str 虽然是 Iterable ，却不是 Iterator 。
-把 list 、 dict 、 str 等 Iterable 变成 Iterator 可以使用 iter() 函数：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># list 是可迭代对象</span></span><br><span class="line">a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> a:</span><br><span class="line">    print(i)</span><br></pre></td></tr></table></figure></p>
-<h3>3.装饰器</h3>
-<p>装饰器是由python闭包系统实现的，本质上，就是一个返回函数的高阶函数，请看：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> ctime</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timefun</span><span class="params">(func)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrappedfunc</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">        print(<span class="string">"%s called at %s"</span>%(func.__name__, ctime()))</span><br><span class="line">        <span class="keyword">return</span> func(*args,**kwargs)</span><br><span class="line">    <span class="keyword">return</span> wrappedfunc</span><br><span class="line"></span><br><span class="line"><span class="meta">@timefun</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a,b)</span>:</span></span><br><span class="line">    print(a+b)</span><br><span class="line"></span><br><span class="line">test(<span class="number">1</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过装饰器验证登陆 只有输入1才可以运行</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(func)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wfunc</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">        pop = input(<span class="string">'输入编号'</span>)</span><br><span class="line">        <span class="keyword">if</span> pop == <span class="string">'1'</span>:</span><br><span class="line">            print(<span class="string">'欢迎登陆'</span>)</span><br><span class="line">            <span class="keyword">return</span> func(*args,**kwargs)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            print(<span class="string">'陌生访问'</span>)</span><br><span class="line">    <span class="keyword">return</span> wfunc</span><br><span class="line"></span><br><span class="line"><span class="meta">@login</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a,b)</span>:</span></span><br><span class="line">    print(a+b)</span><br><span class="line"></span><br><span class="line">test(<span class="number">1</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<h2>错误处理</h2>
-<h3>1.异常处理</h3>
-<p>在python中对异常进行处理时经常使用以下结构：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">except</span> error0:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">except</span> error1:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></p>
+<p>这些可以直接作用于 for 循环的对象统称为可迭代对象： Iterable <font color="red">迭代器都是可迭代对象</font><br>2、迭代器<br>可以被next()函数调用并不断返回下一个值的对象称为迭代器：Iterator。</p>
+<p><font color="red">生成器都是迭代器</font><br>3、iter()函数<br>生成器都是 Iterator 对象，但 list 、 dict 、 str 虽然是 Iterable ，却不是 Iterator 。<br>把 list 、 dict 、 str 等 Iterable 变成 Iterator 可以使用 iter() 函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># list 是可迭代对象</span></span><br><span class="line">a = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> a:</span><br><span class="line">    print(i)</span><br></pre></td></tr></table></figure></p>
+<h3 id="3-装饰器"><a href="#3-装饰器" class="headerlink" title="3.装饰器"></a>3.装饰器</h3><p>装饰器是由python闭包系统实现的，本质上，就是一个返回函数的高阶函数，请看：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> time <span class="keyword">import</span> ctime</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">timefun</span><span class="params">(func)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wrappedfunc</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">        print(<span class="string">"%s called at %s"</span>%(func.__name__, ctime()))</span><br><span class="line">        <span class="keyword">return</span> func(*args,**kwargs)</span><br><span class="line">    <span class="keyword">return</span> wrappedfunc</span><br><span class="line"></span><br><span class="line"><span class="meta">@timefun</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a,b)</span>:</span></span><br><span class="line">    print(a+b)</span><br><span class="line"></span><br><span class="line">test(<span class="number">1</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通过装饰器验证登陆 只有输入1才可以运行</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(func)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">wfunc</span><span class="params">(*args,**kwargs)</span>:</span></span><br><span class="line">        pop = input(<span class="string">'输入编号'</span>)</span><br><span class="line">        <span class="keyword">if</span> pop == <span class="string">'1'</span>:</span><br><span class="line">            print(<span class="string">'欢迎登陆'</span>)</span><br><span class="line">            <span class="keyword">return</span> func(*args,**kwargs)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            print(<span class="string">'陌生访问'</span>)</span><br><span class="line">    <span class="keyword">return</span> wfunc</span><br><span class="line"></span><br><span class="line"><span class="meta">@login</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(a,b)</span>:</span></span><br><span class="line">    print(a+b)</span><br><span class="line"></span><br><span class="line">test(<span class="number">1</span>,<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h2><h3 id="1-异常处理"><a href="#1-异常处理" class="headerlink" title="1.异常处理"></a>1.异常处理</h3><p>在python中对异常进行处理时经常使用以下结构：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">except</span> error0:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">except</span> error1:</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"><span class="keyword">finally</span>:</span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></p>
 <p><code>try</code>后面跟着需要执行的代码块，<code>except</code>后面标注异常的类型，在出现对应的异常的时候执行对应代码块，无论程序是否正确执行<code>finally</code>后面接着的代码块都会在最后执行。Python 中内置的异常类型，参考<a href="https://docs.python.org/3/library/exceptions.html" target="_blank" rel="noopener">这个连接</a>。</p>
-<h3>2.Assert语句</h3>
-<p><code>assert</code>使用方法：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">assert</span> Expression[, Expression]</span><br></pre></td></tr></table></figure></p>
-<p>assert 将会判断后面跟的表达式是否为真，如果为false的话将会抛出<code>AssertionError</code>异常，经常可以用于对变量类型，或者程序逻辑进行检查，比如我们写一个计算两个向量内积的程序：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">mul</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    <span class="keyword">assert</span> len(x) == len(y), <span class="string">"size of 2 vectors should be same"</span></span><br><span class="line">    t = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(x)):</span><br><span class="line">        t += x[i] * y[i]</span><br><span class="line">    <span class="keyword">return</span> t</span><br></pre></td></tr></table></figure></p>
-<h2>Python 爬虫基础、技巧</h2>
-<h3>1.JSON</h3>
-<p>JSON (JavaScript Object Notation) 是一种轻量级的数据交换格式,是前后端交互中常用的数据格式，它与python内建的字典很相似，可以相互转换，然后供我们提取数据
-python3 中可以使用 json 模块来对 JSON 数据进行编解码，它包含了两个函数：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">json.dumps(): 对数据进行编码,也就是字典变为json.</span><br><span class="line">json.loads(): 对数据进行解码,也就是json变为字典.</span><br></pre></td></tr></table></figure></p>
-<p>&lt;font color='red'&gt;json.dumps()中 可以将ensure_ascii 设为 False可以避免一些不必要的问题&lt;/font&gt;
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="comment"># 一个标准的python字典</span></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">'no'</span> : <span class="number">1</span>,</span><br><span class="line">    <span class="string">'name'</span> : <span class="string">'Runoob'</span>,</span><br><span class="line">    <span class="string">'url'</span> : <span class="string">'http://www.runoob.com'</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 将字典转换成json</span></span><br><span class="line">json_str = json.dumps(data,ensure_ascii=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">print(json_str)</span><br><span class="line">print(type(json_str))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一串json数据</span></span><br><span class="line">json_str = <span class="string">'&#123;"name": "Runoob", "no": 1, "url": "http://www.runoob.com"&#125;'</span></span><br><span class="line"><span class="comment"># 将json转为字典</span></span><br><span class="line">dict_ = json.loads(json_str)</span><br><span class="line">print(dict_)</span><br><span class="line">print(dict_[<span class="string">'name'</span>])</span><br><span class="line">print(type(dict_))</span><br></pre></td></tr></table></figure></p>
-<h3>2.Requests库</h3>
-<p>Requests is an elegant and simple HTTP library for Python, built for human beings.
-简单的请求模式:
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># get请求</span></span><br><span class="line">response = requests.get(url, params=&#123;&#125;, headers=&#123;&#125;, cookie=&#123;&#125;, proxies=&#123;&#125;, verify=<span class="keyword">False</span>)</span><br><span class="line"><span class="comment"># post请求</span></span><br><span class="line">response = requests.post(url, data=&#123;&#125;, headers=&#123;&#125;, cookie=&#123;&#125;, proxies=&#123;&#125;, verify=<span class="keyword">False</span>)</span><br></pre></td></tr></table></figure></p>
-<p>response的方法:
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">response.status_code <span class="comment">#响应状态码</span></span><br><span class="line">response.content <span class="comment">#字节方式的响应体，会自动为你解码 gzip 和 deflate 压缩</span></span><br><span class="line">response.text <span class="comment">#字符串方式的响应体，会自动根据响应头部的字符编码进行解码</span></span><br><span class="line">response.json() <span class="comment">#Requests中内置的JSON解码器</span></span><br><span class="line">response.headers <span class="comment">#响应的响应行</span></span><br><span class="line">response.request.headers <span class="comment">#请求的请求行</span></span><br></pre></td></tr></table></figure></p>
-<p>我们可以通过Cookie或者Session进行模拟登陆，获取登录后的数据。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Cookie进行模拟登陆</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">headers = &#123;<span class="string">'User-Agent'</span>: <span class="string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'</span>,<span class="string">'Cookie'</span>:<span class="string">'anonymid=jd5aevsb-2nuy7n; _r01_=1; __utmz=151146938.1520997522.1.1.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utma=151146938.942267969.1520997521.1520997521.1520997521.1; depovince=BJ; _de=84C13AEF64FC380CAE794CB9CCA086D2; ln_uact=18610864225; ln_hurl=http://head.xiaonei.com/photos/0/0/men_main.gif; jebe_key=59aeee30-3816-4484-9881-4f6690bdce3f%7C100ad246dd59063859de7b1ea3f6ad38%7C1526957380310%7C1%7C1526957382140; jebecookies=74f2005f-ba3d-4a61-a1d0-19948a4d8970|||||; JSESSIONID=abcD_hI_-8WDRf9JK4fow; ick_login=cc4c902c-a43d-4481-8cb3-04ecdc2b9c2f; p=9a54e6619286a17266723fc6b08cc5f04; first_login_flag=1; t=97663cf647a6e85e1bd5d13636b0a2724; societyguester=97663cf647a6e85e1bd5d13636b0a2724; id=963865664; xnsid=7a1d85fa; loginfrom=syshome; wp_fold=0'</span>&#125;</span><br><span class="line">url = <span class="string">'http://www.renren.com/963865664/profile'</span></span><br><span class="line">resp = requests.get(url,  headers=headers)</span><br><span class="line">html = resp.content.decode()</span><br><span class="line">print(re.findall(<span class="string">r"李**"</span>,html))</span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Session进行模拟登陆</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line">url = <span class="string">"http://www.renren.com/PLogin.do"</span></span><br><span class="line">headers = &#123;<span class="string">'User-Agent'</span>: <span class="string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'</span>&#125;</span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">'email'</span>:<span class="string">'186****4225'</span>,</span><br><span class="line">    <span class="string">'password'</span>:<span class="string">'q****6'</span></span><br><span class="line">&#125;</span><br><span class="line">session_my = requests.session()</span><br><span class="line">session_my.post(url, data=data, headers=headers)</span><br><span class="line">html = session_my.get(<span class="string">'http://www.renren.com/963865664/profile'</span>, headers=headers).content.decode()</span><br><span class="line">print(re.findall(<span class="string">r"李**"</span>,html))</span><br></pre></td></tr></table></figure></p>
-<h3>3.Xpath</h3>
-<p>XPath 是一门在 XML 文档中查找信息的语言。XPath 用于在 XML 文档中通过元素和属性进行导航。
-lxml库：</p>
+<h3 id="2-Assert语句"><a href="#2-Assert语句" class="headerlink" title="2.Assert语句"></a>2.Assert语句</h3><p><code>assert</code>使用方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">assert</span> Expression[, Expression]</span><br></pre></td></tr></table></figure></p>
+<p>assert 将会判断后面跟的表达式是否为真，如果为false的话将会抛出<code>AssertionError</code>异常，经常可以用于对变量类型，或者程序逻辑进行检查，比如我们写一个计算两个向量内积的程序：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">mul</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    <span class="keyword">assert</span> len(x) == len(y), <span class="string">"size of 2 vectors should be same"</span></span><br><span class="line">    t = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(x)):</span><br><span class="line">        t += x[i] * y[i]</span><br><span class="line">    <span class="keyword">return</span> t</span><br></pre></td></tr></table></figure></p>
+<h2 id="Python-爬虫基础、技巧"><a href="#Python-爬虫基础、技巧" class="headerlink" title="Python 爬虫基础、技巧"></a>Python 爬虫基础、技巧</h2><h3 id="1-JSON"><a href="#1-JSON" class="headerlink" title="1.JSON"></a>1.JSON</h3><p>JSON (JavaScript Object Notation) 是一种轻量级的数据交换格式,是前后端交互中常用的数据格式，它与python内建的字典很相似，可以相互转换，然后供我们提取数据<br>python3 中可以使用 json 模块来对 JSON 数据进行编解码，它包含了两个函数：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">json.dumps(): 对数据进行编码,也就是字典变为json.</span><br><span class="line">json.loads(): 对数据进行解码,也就是json变为字典.</span><br></pre></td></tr></table></figure></p>
+<p><font color="red">json.dumps()中 可以将ensure_ascii 设为 False可以避免一些不必要的问题</font><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="comment"># 一个标准的python字典</span></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">'no'</span> : <span class="number">1</span>,</span><br><span class="line">    <span class="string">'name'</span> : <span class="string">'Runoob'</span>,</span><br><span class="line">    <span class="string">'url'</span> : <span class="string">'http://www.runoob.com'</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 将字典转换成json</span></span><br><span class="line">json_str = json.dumps(data,ensure_ascii=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">print(json_str)</span><br><span class="line">print(type(json_str))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一串json数据</span></span><br><span class="line">json_str = <span class="string">'&#123;"name": "Runoob", "no": 1, "url": "http://www.runoob.com"&#125;'</span></span><br><span class="line"><span class="comment"># 将json转为字典</span></span><br><span class="line">dict_ = json.loads(json_str)</span><br><span class="line">print(dict_)</span><br><span class="line">print(dict_[<span class="string">'name'</span>])</span><br><span class="line">print(type(dict_))</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-Requests库"><a href="#2-Requests库" class="headerlink" title="2.Requests库"></a>2.Requests库</h3><p>Requests is an elegant and simple HTTP library for Python, built for human beings.<br>简单的请求模式:<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># get请求</span></span><br><span class="line">response = requests.get(url, params=&#123;&#125;, headers=&#123;&#125;, cookie=&#123;&#125;, proxies=&#123;&#125;, verify=<span class="keyword">False</span>)</span><br><span class="line"><span class="comment"># post请求</span></span><br><span class="line">response = requests.post(url, data=&#123;&#125;, headers=&#123;&#125;, cookie=&#123;&#125;, proxies=&#123;&#125;, verify=<span class="keyword">False</span>)</span><br></pre></td></tr></table></figure></p>
+<p>response的方法:<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">response.status_code <span class="comment">#响应状态码</span></span><br><span class="line">response.content <span class="comment">#字节方式的响应体，会自动为你解码 gzip 和 deflate 压缩</span></span><br><span class="line">response.text <span class="comment">#字符串方式的响应体，会自动根据响应头部的字符编码进行解码</span></span><br><span class="line">response.json() <span class="comment">#Requests中内置的JSON解码器</span></span><br><span class="line">response.headers <span class="comment">#响应的响应行</span></span><br><span class="line">response.request.headers <span class="comment">#请求的请求行</span></span><br></pre></td></tr></table></figure></p>
+<p>我们可以通过Cookie或者Session进行模拟登陆，获取登录后的数据。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Cookie进行模拟登陆</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">headers = &#123;<span class="string">'User-Agent'</span>: <span class="string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'</span>,<span class="string">'Cookie'</span>:<span class="string">'anonymid=jd5aevsb-2nuy7n; _r01_=1; __utmz=151146938.1520997522.1.1.utmcsr=baidu|utmccn=(organic)|utmcmd=organic; __utma=151146938.942267969.1520997521.1520997521.1520997521.1; depovince=BJ; _de=84C13AEF64FC380CAE794CB9CCA086D2; ln_uact=18610864225; ln_hurl=http://head.xiaonei.com/photos/0/0/men_main.gif; jebe_key=59aeee30-3816-4484-9881-4f6690bdce3f%7C100ad246dd59063859de7b1ea3f6ad38%7C1526957380310%7C1%7C1526957382140; jebecookies=74f2005f-ba3d-4a61-a1d0-19948a4d8970|||||; JSESSIONID=abcD_hI_-8WDRf9JK4fow; ick_login=cc4c902c-a43d-4481-8cb3-04ecdc2b9c2f; p=9a54e6619286a17266723fc6b08cc5f04; first_login_flag=1; t=97663cf647a6e85e1bd5d13636b0a2724; societyguester=97663cf647a6e85e1bd5d13636b0a2724; id=963865664; xnsid=7a1d85fa; loginfrom=syshome; wp_fold=0'</span>&#125;</span><br><span class="line">url = <span class="string">'http://www.renren.com/963865664/profile'</span></span><br><span class="line">resp = requests.get(url,  headers=headers)</span><br><span class="line">html = resp.content.decode()</span><br><span class="line">print(re.findall(<span class="string">r"李**"</span>,html))</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Session进行模拟登陆</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line">url = <span class="string">"http://www.renren.com/PLogin.do"</span></span><br><span class="line">headers = &#123;<span class="string">'User-Agent'</span>: <span class="string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'</span>&#125;</span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">'email'</span>:<span class="string">'186****4225'</span>,</span><br><span class="line">    <span class="string">'password'</span>:<span class="string">'q****6'</span></span><br><span class="line">&#125;</span><br><span class="line">session_my = requests.session()</span><br><span class="line">session_my.post(url, data=data, headers=headers)</span><br><span class="line">html = session_my.get(<span class="string">'http://www.renren.com/963865664/profile'</span>, headers=headers).content.decode()</span><br><span class="line">print(re.findall(<span class="string">r"李**"</span>,html))</span><br></pre></td></tr></table></figure>
+<h3 id="3-Xpath"><a href="#3-Xpath" class="headerlink" title="3.Xpath"></a>3.Xpath</h3><p>XPath 是一门在 XML 文档中查找信息的语言。XPath 用于在 XML 文档中通过元素和属性进行导航。<br>lxml库：</p>
 <blockquote>
 <ul>
 <li>导入lxml的etree库</li>
@@ -1754,20 +1711,16 @@ lxml库：</p>
 <li>lxml 可以自动修正 html 代码</li>
 </ul>
 </blockquote>
-<p>看一个实例
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">ht = <span class="string">"""</span></span><br><span class="line"><span class="string">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;bookstore&gt;·</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="COOKING"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;Everyday Italian&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Giada De Laurentiis&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2005&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;30.00&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="CHILDREN"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;Harry Potter&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;J K. Rowling&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2005&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;29.99&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="WEB"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;XQuery Kick Start&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;James McGovern&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Per Bothner&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Kurt Cagle&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;James Linn&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Vaidyanathan Nagarajan&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2003&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;49.99&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="WEB"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en111"&gt;Learning XML&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Erik T. Ray&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2003&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;39.95&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;/bookstore&gt;</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure></p>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line">xml = etree.HTML(ht) </span><br><span class="line"><span class="comment"># 由于etree将xml修正，根节点已经不是bookstore，因此我们采用//</span></span><br><span class="line"><span class="comment"># 注意xpath返回的内容都是列表</span></span><br><span class="line"><span class="comment"># 选取所有 title的文本</span></span><br><span class="line">titles = xml.xpath(<span class="string">'//bookstore/book/title/text()'</span>)</span><br><span class="line">print(titles)</span><br><span class="line"><span class="comment"># 选取第一个 title的文本</span></span><br><span class="line">one_title = xml.xpath(<span class="string">'//bookstore/book[1]/title/text()'</span>)</span><br><span class="line">print(one_title)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取价格大于35的book的year信息</span></span><br><span class="line">year = xml.xpath(<span class="string">'//bookstore/book[price&gt;35]/year/text()'</span>)</span><br><span class="line">print(year)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取book category="CHILDREN"的书的price</span></span><br><span class="line">price = xml.xpath(<span class="string">'//bookstore/book[@category="CHILDREN"]/price/text()'</span>)</span><br><span class="line">print(price)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取book category=“WEB”的书的title的lang属性</span></span><br><span class="line">lang = xml.xpath(<span class="string">'//bookstore/book[@category="WEB"]/title/@lang'</span>)</span><br><span class="line">print(lang)</span><br><span class="line"></span><br><span class="line"><span class="comment"># xpath如果不去选择属性和txt，会返回Element对象，可以对Element对象再次xpath</span></span><br><span class="line">aaa = xml.xpath(<span class="string">'//bookstore/book[@category="WEB"]/title'</span>)</span><br><span class="line">print(aaa)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> aaa:</span><br><span class="line">    bbb = i.xpath(<span class="string">'./@lang'</span>)</span><br><span class="line">    print(bbb)</span><br></pre></td></tr></table></figure></p>
-<h3>参考资料</h3>
-<blockquote>
+<p>看一个实例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">ht = <span class="string">"""</span></span><br><span class="line"><span class="string">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;bookstore&gt;·</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="COOKING"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;Everyday Italian&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Giada De Laurentiis&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2005&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;30.00&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="CHILDREN"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;Harry Potter&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;J K. Rowling&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2005&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;29.99&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="WEB"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en"&gt;XQuery Kick Start&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;James McGovern&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Per Bothner&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Kurt Cagle&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;James Linn&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Vaidyanathan Nagarajan&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2003&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;49.99&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &lt;book category="WEB"&gt;</span></span><br><span class="line"><span class="string">      &lt;title lang="en111"&gt;Learning XML&lt;/title&gt;</span></span><br><span class="line"><span class="string">      &lt;author&gt;Erik T. Ray&lt;/author&gt;</span></span><br><span class="line"><span class="string">      &lt;year&gt;2003&lt;/year&gt;</span></span><br><span class="line"><span class="string">      &lt;price&gt;39.95&lt;/price&gt;</span></span><br><span class="line"><span class="string">    &lt;/book&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;/bookstore&gt;</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line">xml = etree.HTML(ht) </span><br><span class="line"><span class="comment"># 由于etree将xml修正，根节点已经不是bookstore，因此我们采用//</span></span><br><span class="line"><span class="comment"># 注意xpath返回的内容都是列表</span></span><br><span class="line"><span class="comment"># 选取所有 title的文本</span></span><br><span class="line">titles = xml.xpath(<span class="string">'//bookstore/book/title/text()'</span>)</span><br><span class="line">print(titles)</span><br><span class="line"><span class="comment"># 选取第一个 title的文本</span></span><br><span class="line">one_title = xml.xpath(<span class="string">'//bookstore/book[1]/title/text()'</span>)</span><br><span class="line">print(one_title)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取价格大于35的book的year信息</span></span><br><span class="line">year = xml.xpath(<span class="string">'//bookstore/book[price&gt;35]/year/text()'</span>)</span><br><span class="line">print(year)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取book category="CHILDREN"的书的price</span></span><br><span class="line">price = xml.xpath(<span class="string">'//bookstore/book[@category="CHILDREN"]/price/text()'</span>)</span><br><span class="line">print(price)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选取book category=“WEB”的书的title的lang属性</span></span><br><span class="line">lang = xml.xpath(<span class="string">'//bookstore/book[@category="WEB"]/title/@lang'</span>)</span><br><span class="line">print(lang)</span><br><span class="line"></span><br><span class="line"><span class="comment"># xpath如果不去选择属性和txt，会返回Element对象，可以对Element对象再次xpath</span></span><br><span class="line">aaa = xml.xpath(<span class="string">'//bookstore/book[@category="WEB"]/title'</span>)</span><br><span class="line">print(aaa)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> aaa:</span><br><span class="line">    bbb = i.xpath(<span class="string">'./@lang'</span>)</span><br><span class="line">    print(bbb)</span><br></pre></td></tr></table></figure>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><blockquote>
 <ul>
 <li><a href="http://docs.python-requests.org/zh_CN/latest/user/quickstart.html" target="_blank" rel="noopener">Requests</a></li>
 <li><a href="http://www.runoob.com/xpath/xpath-tutorial.html" target="_blank" rel="noopener">Xpath菜鸟教程</a></li>
 <li><a href="http://www.w3school.com.cn/xpath/index.asp" target="_blank" rel="noopener">Xpath W3school</a></li>
 </ul>
 </blockquote>
-<h3>4.反反爬</h3>
-<p>反反爬虫措施，就是反反爬，当然还有反反反爬虫。
-反反爬虫措施有以下几种:</p>
+<h3 id="4-反反爬"><a href="#4-反反爬" class="headerlink" title="4.反反爬"></a>4.反反爬</h3><p>反反爬虫措施，就是反反爬，当然还有反反反爬虫。<br>反反爬虫措施有以下几种:</p>
 <blockquote>
 <ul>
 <li>降低访问频率(在requests前加time.sleep())</li>
@@ -1895,7 +1848,7 @@ lxml库：</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-08-03 15:11:36" itemprop="dateModified" datetime="2018-08-03T15:11:36+08:00">2018-08-03</time>
+                <time title="修改时间：2018-08-03 20:59:18" itemprop="dateModified" datetime="2018-08-03T20:59:18+08:00">2018-08-03</time>
               
             
           </span>
@@ -1930,25 +1883,14 @@ lxml库：</p>
       
         
           
-            <h3>环境准备</h3>
-<h5>1. 安装Node.js</h5>
-<h5>2. 安装hexo</h5>
-<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure></p>
-<p>#####3. 搭建静态博客
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init blog_name</span><br><span class="line">cd blog_name</span><br><span class="line">$ npm install</span><br><span class="line">$ hexo server  <span class="comment"># 生成静态文件，启动本地服务器</span></span><br></pre></td></tr></table></figure></p>
-<p>#####4. 写博客
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new article</span><br><span class="line"><span class="comment"># 使用markdown编辑器编辑</span></span><br><span class="line">$ hexo generate     <span class="comment">#生成静态文件</span></span><br><span class="line">$ hexo server       <span class="comment">#本地看效果</span></span><br></pre></td></tr></table></figure></p>
-<p>#####5. 部署到github
-编辑_config.yml，添加github仓库地址，添加如下信息
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/deployment.html</span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/$username/$username.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p>
-<p>添加Git部署所依赖的库 hexo-deployer-git
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure></p>
-<p>添加.gitignore文件，忽略不必要的文件
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.DS_Store</span><br><span class="line">Thumbs.db</span><br><span class="line">db.json</span><br><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">public/</span><br><span class="line">.deploy*/</span><br></pre></td></tr></table></figure></p>
-<p>初始化仓库，并添加github远程源
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd blog_name</span><br><span class="line">$ git init</span><br><span class="line">$ git add .</span><br><span class="line">$ git commit -m &quot;blog&quot; # 提交</span><br><span class="line">$ git remote add origin https://github.com/$username/$username.github.io.git # 添加远程源</span><br></pre></td></tr></table></figure></p>
-<p>部署到Github上
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure></p>
+            <h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><h5 id="1-安装Node-js"><a href="#1-安装Node-js" class="headerlink" title="1. 安装Node.js"></a>1. 安装Node.js</h5><h5 id="2-安装hexo"><a href="#2-安装hexo" class="headerlink" title="2. 安装hexo"></a>2. 安装hexo</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+<h5 id="3-搭建静态博客"><a href="#3-搭建静态博客" class="headerlink" title="3. 搭建静态博客"></a>3. 搭建静态博客</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init blog_name</span><br><span class="line">cd blog_name</span><br><span class="line">$ npm install</span><br><span class="line">$ hexo server  <span class="comment"># 生成静态文件，启动本地服务器</span></span><br></pre></td></tr></table></figure>
+<h5 id="4-写博客"><a href="#4-写博客" class="headerlink" title="4. 写博客"></a>4. 写博客</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new article</span><br><span class="line"><span class="comment"># 使用markdown编辑器编辑</span></span><br><span class="line">$ hexo generate     <span class="comment">#生成静态文件</span></span><br><span class="line">$ hexo server       <span class="comment">#本地看效果</span></span><br></pre></td></tr></table></figure>
+<h5 id="5-部署到github"><a href="#5-部署到github" class="headerlink" title="5. 部署到github"></a>5. 部署到github</h5><p>编辑_config.yml，添加github仓库地址，添加如下信息<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Deployment</span></span><br><span class="line"><span class="comment">## Docs: https://hexo.io/docs/deployment.html</span></span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/$username/$username.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p>
+<p>添加Git部署所依赖的库 hexo-deployer-git<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure></p>
+<p>添加.gitignore文件，忽略不必要的文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.DS_Store</span><br><span class="line">Thumbs.db</span><br><span class="line">db.json</span><br><span class="line">*.log</span><br><span class="line">node_modules/</span><br><span class="line">public/</span><br><span class="line">.deploy*/</span><br></pre></td></tr></table></figure></p>
+<p>初始化仓库，并添加github远程源<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd blog_name</span><br><span class="line">$ git init</span><br><span class="line">$ git add .</span><br><span class="line">$ git commit -m &quot;blog&quot; # 提交</span><br><span class="line">$ git remote add origin https://github.com/$username/$username.github.io.git # 添加远程源</span><br></pre></td></tr></table></figure></p>
+<p>部署到Github上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -2030,7 +1972,7 @@ lxml库：</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2057,7 +1999,9 @@ lxml库：</p>
                     
                       
                     
-                    <span class="site-state-item-count">6</span>
+                      
+                    
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
@@ -2256,6 +2200,8 @@ lxml库：</p>
     
       
         
+      
+    
       
     
       
