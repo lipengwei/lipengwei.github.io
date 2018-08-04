@@ -108,13 +108,13 @@
 
 
 
-  <meta name="description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络1.神经元这其实就是一个单">
+  <meta name="description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络 1.神经元  这其实就是">
 <meta name="keywords" content="深度学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深度学习之DNN、CNN和RNN">
 <meta property="og:url" content="http://lipengwei.github.io/2018/08/02/深度学习之DNN、CNN和RNN/index.html">
 <meta property="og:site_name" content="李鹏伟的技术博客">
-<meta property="og:description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络1.神经元这其实就是一个单">
+<meta property="og:description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络 1.神经元  这其实就是">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://lipengwei.github.io/images/nn.png">
 <meta property="og:image" content="http://lipengwei.github.io/images/nw.png">
@@ -140,7 +140,7 @@
 <meta property="og:updated_time" content="2018-08-03T07:11:26.670Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深度学习之DNN、CNN和RNN">
-<meta name="twitter:description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络1.神经元这其实就是一个单">
+<meta name="twitter:description" content="深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。 深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。 神经网络 1.神经元  这其实就是">
 <meta name="twitter:image" content="http://lipengwei.github.io/images/nn.png">
 
 
@@ -397,16 +397,33 @@
       
         <p>深度学习是伴随着云计算和大数据时代发展起来的，理论知识其实早已经在很多年前就已经有研究，鉴于当时计算能力的有限，所以深度学习才被冷落。</p>
 <p>深度学习是机器学习中一种基于对数据进行表征的学习，观测值（如图像）可以使用多种方式来表示，如每个像素强度值向量，或者抽象为一系列边、特定形状区域等。其好处就是用非监督或者半监督的特征学习和分层特征提取高效算法来替代手工获取特征。</p>
-<h2 id="神经网络"><a href="#神经网络" class="headerlink" title="神经网络"></a>神经网络</h2><h3 id="1-神经元"><a href="#1-神经元" class="headerlink" title="1.神经元"></a>1.神经元</h3><p><img src="/images/nn.png" alt="神经元"><br>这其实就是一个单层感知集，其输入是由$x<em>{1},x</em>{2},x<em>{3}$和+1组成的向量，其输出为：$h</em>{W,b}(x)=f(W^\mathrm{T}x)=f( \sum<em>{i=1}^{3} W</em>{i}x_{i} + b )$，其中f是一个激活函数。</p>
-<h3 id="2-人工神经网络"><a href="#2-人工神经网络" class="headerlink" title="2.人工神经网络"></a>2.人工神经网络</h3><p><img src="/images/nw.png" alt="人工神经网络"><br>人工神经网络就是多个神经元的级联，上一神经元的输出事下一级神经元的输入，而且信号在两级的两个神经元之间传播的时候需要乘上这两个神经元对应的权值，层与层之间的神经元以全连接的方式连接在一起。<br>其中包含一个输入层，一个或者多个影藏层，一个输出层，如果影藏层的层数大于1层的话，就可以称为深度神经网络(DNN)了。</p>
-<h3 id="3-异或问题"><a href="#3-异或问题" class="headerlink" title="3.异或问题"></a>3.异或问题</h3><p><img src="/images/xor.png" alt="线性不可分"><br>我们知道把向量做无限次的线性变换，依然是线性不可分的，所以我们要做一个非线性变换，就是在更高维的空间来做分类，神经网络是如何解决异或问题的呢？答案就是激活函数。<br><img src="/images/act.png" alt="激活函数"><br>如图神经元：$\sum$ 就是做线性变换，对不同的输入进行求和、聚集，而$\sigma$ 做的就是非线性变换，将低维数据进行压缩、扭曲和变形，使其表达能力更强，表示更抽象。</p>
-<h3 id="4-万能近似定理（universal-approximation）"><a href="#4-万能近似定理（universal-approximation）" class="headerlink" title="4.万能近似定理（universal approximation）"></a>4.万能近似定理（universal approximation）</h3><p>万能近似定理（universal approximation theorem）(Hornik et al., 1989;Cybenko, 1989)：一个前馈神经网络如果具有线性输出层和至少一层具有任何一种“挤压”性质的激活函数（例如logistic sigmoid激活函数）的隐藏层，只要给予网络足够数量的隐藏hexo单元，它可以以任意的精度来近似任何从一个有限维空间到另一个有限维空间的Borel 可测函数。</p>
+<h2>神经网络</h2>
+<h3>1.神经元</h3>
+<p><img src="/images/nn.png" alt="神经元">
+这其实就是一个单层感知集，其输入是由$x_{1},x_{2},x_{3}$和+1组成的向量，其输出为：$h_{W,b}(x)=f(W^\mathrm{T}x)=f( \sum_{i=1}^{3} W_{i}x_{i} + b )$，其中f是一个激活函数。</p>
+<h3>2.人工神经网络</h3>
+<p><img src="/images/nw.png" alt="人工神经网络">
+人工神经网络就是多个神经元的级联，上一神经元的输出事下一级神经元的输入，而且信号在两级的两个神经元之间传播的时候需要乘上这两个神经元对应的权值，层与层之间的神经元以全连接的方式连接在一起。
+其中包含一个输入层，一个或者多个影藏层，一个输出层，如果影藏层的层数大于1层的话，就可以称为深度神经网络(DNN)了。</p>
+<h3>3.异或问题</h3>
+<p><img src="/images/xor.png" alt="线性不可分">
+我们知道把向量做无限次的线性变换，依然是线性不可分的，所以我们要做一个非线性变换，就是在更高维的空间来做分类，神经网络是如何解决异或问题的呢？答案就是激活函数。
+<img src="/images/act.png" alt="激活函数">
+如图神经元：$\sum$ 就是做线性变换，对不同的输入进行求和、聚集，而$\sigma$ 做的就是非线性变换，将低维数据进行压缩、扭曲和变形，使其表达能力更强，表示更抽象。</p>
+<h3>4.万能近似定理（universal approximation）</h3>
+<p>万能近似定理（universal approximation theorem）(Hornik et al., 1989;Cybenko, 1989)：一个前馈神经网络如果具有线性输出层和至少一层具有任何一种“挤压”性质的激活函数（例如logistic sigmoid激活函数）的隐藏层，只要给予网络足够数量的隐藏hexo单元，它可以以任意的精度来近似任何从一个有限维空间到另一个有限维空间的Borel 可测函数。</p>
 <p>有了万能近似框架，但是现实是我们没有万能的数据集与万能的优化函数来求的参数，还有可能因为过拟合而学习到了错误的函数。</p>
-<h3 id="5-softmax层"><a href="#5-softmax层" class="headerlink" title="5.softmax层"></a>5.softmax层</h3><p><img src="/images/soft.png" alt="softmax层"><br>softmax作为分类任务输出的最后一层，在很多网络结构中都用应用。原理与公式参考图示。</p>
-<h2 id="DNN"><a href="#DNN" class="headerlink" title="DNN"></a>DNN</h2><p>Dnn是深度学习的基础，Dnn其实就是隐藏层数比较多的一种神经网络，层与层之间都是全连接的。<br>DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08/02/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E4%B8%8E%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">反向传播与梯度下降</a></p>
-<h3 id="1-DNN的思考"><a href="#1-DNN的思考" class="headerlink" title="1.DNN的思考"></a>1.DNN的思考</h3><p>神经网络的结构越深，表达能力越强，泛化能力越好，那么如何能训练一个很深的神经网络？</p>
+<h3>5.softmax层</h3>
+<p><img src="/images/soft.png" alt="softmax层">
+softmax作为分类任务输出的最后一层，在很多网络结构中都用应用。原理与公式参考图示。</p>
+<h2>DNN</h2>
+<p>Dnn是深度学习的基础，Dnn其实就是隐藏层数比较多的一种神经网络，层与层之间都是全连接的。
+DNN学习的数学原理参考博客<a href="https://lipengwei.github.io/2018/08/02/%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E4%B8%8E%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">反向传播与梯度下降</a></p>
+<h3>1.DNN的思考</h3>
+<p>神经网络的结构越深，表达能力越强，泛化能力越好，那么如何能训练一个很深的神经网络？</p>
 <p>神经网络的优化算法是梯度下降，如何训练才能避免陷入检差的局部最优点？</p>
-<h3 id="2-神经网络的问题"><a href="#2-神经网络的问题" class="headerlink" title="2.神经网络的问题"></a>2.神经网络的问题</h3><p>1、梯度消失，网络结构很深的时候，每层反向传播都会乘上激活函数的梯度，而sigmoid函数的梯度最大值是1/4&lt;1,多次乘一个小于1的数会趋向0，所以梯度消失。解决方法有几种：</p>
+<h3>2.神经网络的问题</h3>
+<p>1、梯度消失，网络结构很深的时候，每层反向传播都会乘上激活函数的梯度，而sigmoid函数的梯度最大值是1/4&lt;1,多次乘一个小于1的数会趋向0，所以梯度消失。解决方法有几种：</p>
 <blockquote>
 <ul>
 <li>使用Relu作为激活函数</li>
@@ -415,7 +432,8 @@
 <li>使用预训练</li>
 </ul>
 </blockquote>
-<p>2、梯度爆炸<br>在RNN中常会出现，因为反向传播过程中，state会共用W，所以会导致W会随着时间而连乘，如果W的值都大于1，则会梯度爆炸，如果小于1，则会梯度消失，解决梯度爆炸的方法是梯度裁剪，即，当梯度大于某一个阈值的时候，就强行将其限制在这个范围之内。RNN解决梯度消失的问题是采用LSTM作为基本单元。</p>
+<p>2、梯度爆炸
+在RNN中常会出现，因为反向传播过程中，state会共用W，所以会导致W会随着时间而连乘，如果W的值都大于1，则会梯度爆炸，如果小于1，则会梯度消失，解决梯度爆炸的方法是梯度裁剪，即，当梯度大于某一个阈值的时候，就强行将其限制在这个范围之内。RNN解决梯度消失的问题是采用LSTM作为基本单元。</p>
 <p>3、过拟合</p>
 <blockquote>
 <ul>
@@ -433,31 +451,71 @@
 </blockquote>
 <p>5、优化函数，使用更高效的优化算法</p>
 <p>6、超参数的调整，学习率是认为设定的，使用自适应的学习率算法</p>
-<h2 id="CNN"><a href="#CNN" class="headerlink" title="CNN"></a>CNN</h2><p>为了减少学习参数和提取局部特征，CNN网络结构应运而生。CNN的主要特点是权值共享与局部连接，下面介绍CNN相较DNN的一些特点：</p>
-<h3 id="1-局部连接"><a href="#1-局部连接" class="headerlink" title="1.局部连接"></a>1.局部连接</h3><p>我们都知道复杂的整体都是由简单的局部构成，那么如何提取到这些简单的局部特征呢？我们看下面这幅图<br><img src="/images/local.png" alt="局部连接"><br>每个神经元只和其中3个神经元连接，那么较底层的神经元就提取到了较简单的局部信息，而月高层的神经元，就能提取到更复杂的特征。如下图更形象的解释了什么平面上的局部连接。<br><img src="/images/2Dlocal.png" alt="二维局部连接"></p>
-<h3 id="2-权值共享"><a href="#2-权值共享" class="headerlink" title="2.权值共享"></a>2.权值共享</h3><p>CNN的权值共享说的是一个卷积核的权值在做卷积运算时是不变的，所以减少了参数个数</p>
-<h3 id="3-卷积与卷积核"><a href="#3-卷积与卷积核" class="headerlink" title="3.卷积与卷积核"></a>3.卷积与卷积核</h3><p><img src="/images/cnn.gif" alt="卷积"><br>卷积公式：$y(n)=\sum_{i=-\infty}^{+\infty} x(i)h(n-i)$<br>tensorflow中接口：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tf.nn.conv2d(</span><br><span class="line">    input,     <span class="comment"># 输入</span></span><br><span class="line">    filter,    <span class="comment"># 卷积核，</span></span><br><span class="line">    strides,   <span class="comment"># 步长</span></span><br><span class="line">    padding,   <span class="comment"># ‘same’ 或者 'valid'</span></span><br><span class="line">    use_cudnn_on_gpu=<span class="keyword">True</span>,</span><br><span class="line">    data_format=<span class="string">'NHWC'</span>,</span><br><span class="line">    dilations=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>],</span><br><span class="line">    name=<span class="keyword">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>举个例子：<br>考虑一种最简单的情况，现在有一张3×3单通道的图像（对应的shape：[1，3，3，1]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，最后会得到一张3×3的feature map。</p>
+<h2>CNN</h2>
+<p>为了减少学习参数和提取局部特征，CNN网络结构应运而生。CNN的主要特点是权值共享与局部连接，下面介绍CNN相较DNN的一些特点：</p>
+<h3>1.局部连接</h3>
+<p>我们都知道复杂的整体都是由简单的局部构成，那么如何提取到这些简单的局部特征呢？我们看下面这幅图
+<img src="/images/local.png" alt="局部连接">
+每个神经元只和其中3个神经元连接，那么较底层的神经元就提取到了较简单的局部信息，而月高层的神经元，就能提取到更复杂的特征。如下图更形象的解释了什么平面上的局部连接。
+<img src="/images/2Dlocal.png" alt="二维局部连接"></p>
+<h3>2.权值共享</h3>
+<p>CNN的权值共享说的是一个卷积核的权值在做卷积运算时是不变的，所以减少了参数个数</p>
+<h3>3.卷积与卷积核</h3>
+<p><img src="/images/cnn.gif" alt="卷积">
+卷积公式：$y(n)=\sum_{i=-\infty}^{+\infty} x(i)h(n-i)$
+tensorflow中接口：
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">tf.nn.conv2d(</span><br><span class="line">    input,     <span class="comment"># 输入</span></span><br><span class="line">    filter,    <span class="comment"># 卷积核，</span></span><br><span class="line">    strides,   <span class="comment"># 步长</span></span><br><span class="line">    padding,   <span class="comment"># ‘same’ 或者 'valid'</span></span><br><span class="line">    use_cudnn_on_gpu=<span class="keyword">True</span>,</span><br><span class="line">    data_format=<span class="string">'NHWC'</span>,</span><br><span class="line">    dilations=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>],</span><br><span class="line">    name=<span class="keyword">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>举个例子：
+考虑一种最简单的情况，现在有一张3×3单通道的图像（对应的shape：[1，3，3，1]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，最后会得到一张3×3的feature map。</p>
 <p>增加图片的通道数，使用一张3×3五通道的图像（对应的shape：[1，3，3，5]），用一个1×1的卷积核（对应的shape：[1，1，1，1]）去做卷积，仍然是一张3×3的feature map，这就相当于每一个像素点，卷积核都与该像素点的每一个通道做卷积。</p>
 <p>Strides表示卷积核移动的步长。</p>
-<p>Padding=”SAME”表示要填充input使得output的shape与input的shape一致。</p>
-<p>Padding=”Valid”表示不填充，output的shape为：$\frac{I-K}{2}+1$,I表示input的size，K表示kernal_size。<br>动图所示为strides=1，padding=’Valid’的情况。</p>
+<p>Padding=&quot;SAME&quot;表示要填充input使得output的shape与input的shape一致。</p>
+<p>Padding=&quot;Valid&quot;表示不填充，output的shape为：$\frac{I-K}{2}+1$,I表示input的size，K表示kernal_size。
+动图所示为strides=1，padding='Valid'的情况。</p>
 <p>卷积核表示卷积层训练出多少个局部特征。</p>
-<h3 id="4-池化"><a href="#4-池化" class="headerlink" title="4.池化"></a>4.池化</h3><p><img src="/images/pooling.png" alt="池化"><br>从卷积完的特征图里面选择最大（Max pooling）或者平均（Average pooling）的值作为局部特征被保留下来。</p>
-<h3 id="4-常见CNN结构"><a href="#4-常见CNN结构" class="headerlink" title="4.常见CNN结构"></a>4.常见CNN结构</h3><p><img src="/images/cnn_pool.png" alt="CNN"></p>
-<h3 id="5-图像领域经典CNN模型"><a href="#5-图像领域经典CNN模型" class="headerlink" title="5.图像领域经典CNN模型"></a>5.图像领域经典CNN模型</h3><p>1、LeNet<br><img src="/images/LeNet.png" alt="LeNet"><br>2、VGG<br><img src="/images/VGG1.png" alt="VGG1"><br><img src="/images/VGG2.png" alt="VGG2"><br>3、GoogLeNet <a href="https://blog.csdn.net/qq_31531635/article/details/72232651" target="_blank" rel="noopener">inception网络结构参考</a></p>
+<h3>4.池化</h3>
+<p><img src="/images/pooling.png" alt="池化">
+从卷积完的特征图里面选择最大（Max pooling）或者平均（Average pooling）的值作为局部特征被保留下来。</p>
+<h3>4.常见CNN结构</h3>
+<p><img src="/images/cnn_pool.png" alt="CNN"></p>
+<h3>5.图像领域经典CNN模型</h3>
+<p>1、LeNet
+<img src="/images/LeNet.png" alt="LeNet">
+2、VGG
+<img src="/images/VGG1.png" alt="VGG1">
+<img src="/images/VGG2.png" alt="VGG2">
+3、GoogLeNet <a href="https://blog.csdn.net/qq_31531635/article/details/72232651" target="_blank" rel="noopener">inception网络结构参考</a></p>
 <p>4、ResNet <a href="https://blog.csdn.net/lanran2/article/details/79057994" target="_blank" rel="noopener">深度残差网络参考</a></p>
-<h2 id="RNN"><a href="#RNN" class="headerlink" title="RNN"></a>RNN</h2><p>DNN和CNN已经在深度学习中很强了，但是他们无法解决序列到序列的训练，而RNN正是通过存储记忆来解决序列到序列的问题。<br><img src="/images/srnn.png" alt="基本RNN"><br>图中三个公式，<br>1、$h<em>{t}=f_w(h</em>{t-1}, x)$ 计算的是t时刻隐层的输出。</p>
-<p>2、$h<em>{t}=tanh(W</em>{hh}h<em>{t-1}+W</em>{xh}x<em>{t})$,这是$h</em>{t}$的具体公式，其中$W<em>{hh}$是隐层到隐层的权重，也就是记忆，$h</em>{t-1}$表示的是上一时刻的记忆，$W<em>{xh}$表示的是输入层的权重，$x</em>{t}$表示t时刻的输入</p>
-<p>3、$y<em>{t}$表示的是t时刻的输出，$W</em>{hy}$表示的是隐层到输出层的权重.</p>
-<p>一个RNN的例子，如图：<br><img src="/images/rnn.png" alt="RNN实例"></p>
-<h3 id="1-RNN展开"><a href="#1-RNN展开" class="headerlink" title="1.RNN展开"></a>1.RNN展开</h3><p><img src="/images/trnn.png" alt="RNN展开"><br>RNN单层展开指，横向展开通常称为按时间序列展开，序列数据预测问题中，预测一个序列中的下一个次，最好能知道哪些词在它前面</p>
-<h3 id="2-RNN共用权重"><a href="#2-RNN共用权重" class="headerlink" title="2.RNN共用权重"></a>2.RNN共用权重</h3><p><img src="/images/wrnn.png" alt="RNN权重"><br>RNN按时间展开后，$W<em>{input}$、$W</em>{hidden}$和$W_{output}$都是保持一样，并不是多个，这也是为什么RNN会出现梯度爆炸的原因。</p>
-<h3 id="3-RNN的BP（BPTT）"><a href="#3-RNN的BP（BPTT）" class="headerlink" title="3.RNN的BP（BPTT）"></a>3.RNN的BP（BPTT）</h3><p>RNN的反向传播是按时间序列展开的，和普通的BP算法不一样，叫随时间反向传播(BackPropagation Through Time,BPTT)。<a href="https://www.cnblogs.com/wacc/p/5341670.html" target="_blank" rel="noopener">推导参考</a></p>
-<h3 id="4-RNN的不足"><a href="#4-RNN的不足" class="headerlink" title="4.RNN的不足"></a>4.RNN的不足</h3><p>1、当展开一定步数后，开始输入的数据的记忆经过几次展开传递后，记忆力会衰弱。<br><img src="/images/rnn_e.png" alt="RNN缺点"><br>2、当RNN深度和时间序列长度过高时，很容易同时出现梯度消失于梯度爆炸。</p>
-<h3 id="5-LSTM"><a href="#5-LSTM" class="headerlink" title="5.LSTM"></a>5.LSTM</h3><p><img src="/images/lstm.png" alt="LSTM"><br>长短期记忆网络（Long Short-Term Memory）LSTM不光解决了梯度消失的问题，同时解决了普通RNN记忆力只有短期记忆的问题。<br><img src="/images/lstm_g.png" alt="LSTM Gate"><br>LSTM三个门：输入门，遗忘门，输出门，当$x_{t}$输入进去之后，相当于传入到4个地方，三个门以及作为数据输入，相应的公式计算，请参考<a href="https://blog.csdn.net/gzj_1101/article/details/79376798" target="_blank" rel="noopener">这篇博客</a></p>
-<h3 id="6-多层LSTM"><a href="#6-多层LSTM" class="headerlink" title="6.多层LSTM"></a>6.多层LSTM</h3><p><img src="/images/mlstm.png" alt="Deep LSTM"></p>
-<h2 id="补充（Tensorflow中rnn的接口）"><a href="#补充（Tensorflow中rnn的接口）" class="headerlink" title="补充（Tensorflow中rnn的接口）"></a>补充（Tensorflow中rnn的接口）</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rnn_size = <span class="number">128</span>   <span class="comment"># rnn隐层节点数</span></span><br><span class="line">num_layers = <span class="number">5</span>   <span class="comment"># rnn层数</span></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="comment"># 第一步，构建LSTM单元</span></span><br><span class="line">decoder_cell = tf.contrib.rnn.LSTMCell(rnn_size,initializer=tf.random_uniform_initializer(<span class="number">-0.1</span>, <span class="number">0.1</span>, seed=<span class="number">2</span>))</span><br><span class="line"><span class="comment"># 第二步，构建多层网络</span></span><br><span class="line">cell = tf.contrib.rnn.MultiRNNCell([get_decoder_cell(rnn_size) <span class="keyword">for</span> _ <span class="keyword">in</span> range(num_layers)])</span><br></pre></td></tr></table></figure>
+<h2>RNN</h2>
+<p>DNN和CNN已经在深度学习中很强了，但是他们无法解决序列到序列的训练，而RNN正是通过存储记忆来解决序列到序列的问题。
+<img src="/images/srnn.png" alt="基本RNN">
+图中三个公式，
+1、$h_{t}=f_w(h_{t-1}, x)$ 计算的是t时刻隐层的输出。</p>
+<p>2、$h_{t}=tanh(W_{hh}h_{t-1}+W_{xh}x_{t})$,这是$h_{t}$的具体公式，其中$W_{hh}$是隐层到隐层的权重，也就是记忆，$h_{t-1}$表示的是上一时刻的记忆，$W_{xh}$表示的是输入层的权重，$x_{t}$表示t时刻的输入</p>
+<p>3、$y_{t}$表示的是t时刻的输出，$W_{hy}$表示的是隐层到输出层的权重.</p>
+<p>一个RNN的例子，如图：
+<img src="/images/rnn.png" alt="RNN实例"></p>
+<h3>1.RNN展开</h3>
+<p><img src="/images/trnn.png" alt="RNN展开">
+RNN单层展开指，横向展开通常称为按时间序列展开，序列数据预测问题中，预测一个序列中的下一个次，最好能知道哪些词在它前面</p>
+<h3>2.RNN共用权重</h3>
+<p><img src="/images/wrnn.png" alt="RNN权重">
+RNN按时间展开后，$W_{input}$、$W_{hidden}$和$W_{output}$都是保持一样，并不是多个，这也是为什么RNN会出现梯度爆炸的原因。</p>
+<h3>3.RNN的BP（BPTT）</h3>
+<p>RNN的反向传播是按时间序列展开的，和普通的BP算法不一样，叫随时间反向传播(BackPropagation Through Time,BPTT)。<a href="https://www.cnblogs.com/wacc/p/5341670.html" target="_blank" rel="noopener">推导参考</a></p>
+<h3>4.RNN的不足</h3>
+<p>1、当展开一定步数后，开始输入的数据的记忆经过几次展开传递后，记忆力会衰弱。
+<img src="/images/rnn_e.png" alt="RNN缺点">
+2、当RNN深度和时间序列长度过高时，很容易同时出现梯度消失于梯度爆炸。</p>
+<h3>5.LSTM</h3>
+<p><img src="/images/lstm.png" alt="LSTM">
+长短期记忆网络（Long Short-Term Memory）LSTM不光解决了梯度消失的问题，同时解决了普通RNN记忆力只有短期记忆的问题。
+<img src="/images/lstm_g.png" alt="LSTM Gate">
+LSTM三个门：输入门，遗忘门，输出门，当$x_{t}$输入进去之后，相当于传入到4个地方，三个门以及作为数据输入，相应的公式计算，请参考<a href="https://blog.csdn.net/gzj_1101/article/details/79376798" target="_blank" rel="noopener">这篇博客</a></p>
+<h3>6.多层LSTM</h3>
+<p><img src="/images/mlstm.png" alt="Deep LSTM"></p>
+<h2>补充（Tensorflow中rnn的接口）</h2>
+<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rnn_size = <span class="number">128</span>   <span class="comment"># rnn隐层节点数</span></span><br><span class="line">num_layers = <span class="number">5</span>   <span class="comment"># rnn层数</span></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="comment"># 第一步，构建LSTM单元</span></span><br><span class="line">decoder_cell = tf.contrib.rnn.LSTMCell(rnn_size,initializer=tf.random_uniform_initializer(<span class="number">-0.1</span>, <span class="number">0.1</span>, seed=<span class="number">2</span>))</span><br><span class="line"><span class="comment"># 第二步，构建多层网络</span></span><br><span class="line">cell = tf.contrib.rnn.MultiRNNCell([get_decoder_cell(rnn_size) <span class="keyword">for</span> _ <span class="keyword">in</span> range(num_layers)])</span><br></pre></td></tr></table></figure></p>
 <p>RNN与CNN和DNN结构不太一样，所以在此记录一下</p>
 
       
@@ -639,7 +697,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络"><span class="nav-number">1.</span> <span class="nav-text">神经网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-神经元"><span class="nav-number">1.1.</span> <span class="nav-text">1.神经元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-人工神经网络"><span class="nav-number">1.2.</span> <span class="nav-text">2.人工神经网络</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-异或问题"><span class="nav-number">1.3.</span> <span class="nav-text">3.异或问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-万能近似定理（universal-approximation）"><span class="nav-number">1.4.</span> <span class="nav-text">4.万能近似定理（universal approximation）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-softmax层"><span class="nav-number">1.5.</span> <span class="nav-text">5.softmax层</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNN"><span class="nav-number">2.</span> <span class="nav-text">DNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-DNN的思考"><span class="nav-number">2.1.</span> <span class="nav-text">1.DNN的思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-神经网络的问题"><span class="nav-number">2.2.</span> <span class="nav-text">2.神经网络的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CNN"><span class="nav-number">3.</span> <span class="nav-text">CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-局部连接"><span class="nav-number">3.1.</span> <span class="nav-text">1.局部连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-权值共享"><span class="nav-number">3.2.</span> <span class="nav-text">2.权值共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-卷积与卷积核"><span class="nav-number">3.3.</span> <span class="nav-text">3.卷积与卷积核</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-池化"><span class="nav-number">3.4.</span> <span class="nav-text">4.池化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-常见CNN结构"><span class="nav-number">3.5.</span> <span class="nav-text">4.常见CNN结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-图像领域经典CNN模型"><span class="nav-number">3.6.</span> <span class="nav-text">5.图像领域经典CNN模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RNN"><span class="nav-number">4.</span> <span class="nav-text">RNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-RNN展开"><span class="nav-number">4.1.</span> <span class="nav-text">1.RNN展开</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-RNN共用权重"><span class="nav-number">4.2.</span> <span class="nav-text">2.RNN共用权重</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-RNN的BP（BPTT）"><span class="nav-number">4.3.</span> <span class="nav-text">3.RNN的BP（BPTT）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-RNN的不足"><span class="nav-number">4.4.</span> <span class="nav-text">4.RNN的不足</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-LSTM"><span class="nav-number">4.5.</span> <span class="nav-text">5.LSTM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-多层LSTM"><span class="nav-number">4.6.</span> <span class="nav-text">6.多层LSTM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充（Tensorflow中rnn的接口）"><span class="nav-number">5.</span> <span class="nav-text">补充（Tensorflow中rnn的接口）</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">神经网络</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.1.</span> <span class="nav-text">1.神经元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.</span> <span class="nav-text">2.人工神经网络</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.3.</span> <span class="nav-text">3.异或问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.</span> <span class="nav-text">4.万能近似定理（universal approximation）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.5.</span> <span class="nav-text">5.softmax层</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">DNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">1.DNN的思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">2.神经网络的问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.1.</span> <span class="nav-text">1.局部连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.2.</span> <span class="nav-text">2.权值共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.3.</span> <span class="nav-text">3.卷积与卷积核</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.4.</span> <span class="nav-text">4.池化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.5.</span> <span class="nav-text">4.常见CNN结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.6.</span> <span class="nav-text">5.图像领域经典CNN模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">RNN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.1.</span> <span class="nav-text">1.RNN展开</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.2.</span> <span class="nav-text">2.RNN共用权重</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.</span> <span class="nav-text">3.RNN的BP（BPTT）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.4.</span> <span class="nav-text">4.RNN的不足</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.5.</span> <span class="nav-text">5.LSTM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.</span> <span class="nav-text">6.多层LSTM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text">补充（Tensorflow中rnn的接口）</span></a></li></ol></div>
             
 
           </div>
