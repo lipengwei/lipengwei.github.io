@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="序列到序列模型(Seq2Seq) RNN是一种处理序列数据的神经网络，输入是序列，输出也是序列，所有有人就提出了基于Encoder到Decoder的模型结构来处理序列到序列的应用。最基础的Seq2Seq模型包含了三个部分，即Encoder、Decoder以及连接两者的中间状态向量，Encoder通过学习输入，将其编码成一个固定大小的状态向量S，继而将S传递给Decoder，Decoder再通过对状">
+<meta name="keywords" content="RNN Seq2Seq Attention">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RNN应用之Seq2Seq和Attention">
+<meta property="og:url" content="http://lipengwei.github.io/2018/08/05/RNN应用之Seq2Seq和Attention/index.html">
+<meta property="og:site_name" content="李鹏伟的技术博客">
+<meta property="og:description" content="序列到序列模型(Seq2Seq) RNN是一种处理序列数据的神经网络，输入是序列，输出也是序列，所有有人就提出了基于Encoder到Decoder的模型结构来处理序列到序列的应用。最基础的Seq2Seq模型包含了三个部分，即Encoder、Decoder以及连接两者的中间状态向量，Encoder通过学习输入，将其编码成一个固定大小的状态向量S，继而将S传递给Decoder，Decoder再通过对状">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://lipengwei.github.io/images/seq2seq1.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/seq2seq2.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/seq_train.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/seq_test.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/dataset.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/attention.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/att1.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/att2.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/attention2.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/att_ex.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/code_att1.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/code_att2.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/exam_att">
+<meta property="og:image" content="http://lipengwei.github.io/images/res_att.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/pre_att.png">
+<meta property="og:updated_time" content="2018-08-11T10:52:13.013Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RNN应用之Seq2Seq和Attention">
+<meta name="twitter:description" content="序列到序列模型(Seq2Seq) RNN是一种处理序列数据的神经网络，输入是序列，输出也是序列，所有有人就提出了基于Encoder到Decoder的模型结构来处理序列到序列的应用。最基础的Seq2Seq模型包含了三个部分，即Encoder、Decoder以及连接两者的中间状态向量，Encoder通过学习输入，将其编码成一个固定大小的状态向量S，继而将S传递给Decoder，Decoder再通过对状">
+<meta name="twitter:image" content="http://lipengwei.github.io/images/seq2seq1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://lipengwei.github.io/2018/08/05/RNN应用之Seq2Seq和Attention/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>RNN应用之Seq2Seq和Attention | 李鹏伟的技术博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">李鹏伟的技术博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/05/RNN应用之Seq2Seq和Attention/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="李鹏伟">
+      <meta itemprop="description" content="AI">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李鹏伟的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">RNN应用之Seq2Seq和Attention
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-05 13:43:03" itemprop="dateCreated datePublished" datetime="2018-08-05T13:43:03+08:00">2018-08-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-08-11 18:52:13" itemprop="dateModified" datetime="2018-08-11T18:52:13+08:00">2018-08-11</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2>序列到序列模型(Seq2Seq)</h2>
+<p>RNN是一种处理序列数据的神经网络，输入是序列，输出也是序列，所有有人就提出了基于Encoder到Decoder的模型结构来处理序列到序列的应用。最基础的Seq2Seq模型包含了三个部分，即Encoder、Decoder以及连接两者的中间状态向量，Encoder通过学习输入，将其编码成一个固定大小的状态向量S，继而将S传递给Decoder，Decoder再通过对状态向量S的学习来进行输出。以下介绍两种Seq2Seq的模型结构。</p>
+<h3>1. Seq-to-Seq框架1</h3>
+<p>该模型来自于论文<a href="https://arxiv.org/pdf/1406.1078.pdf" target="_blank" rel="noopener">Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation</a>，其结构图：
+<img src="/images/seq2seq1.png" alt="seq2seq1">
+Encoder阶段将整个source序列编码成一个固定维度的向量C（也就是RNN最终隐层状态），计算公式：
+$$C=\tanh(Vh^N)$$ V表示权重矩阵， $h^N$ 表示Encoder阶段最后一个输入的隐层状态(也可以理解为整个序列的编码记忆)。</p>
+<hr>
+<p>Decoder也是一个RNN网络， $C$ 作为初始化隐层状态传入（理解为将Encoder序列解码），其隐层状态 $h$ 的计算公式：
+$$h_t = f(h_{t-1}, y_{t-1}, C)$$
+其中 $h_{t-1}$ 和 $y_{t-1}$ 表示前一时刻隐层值和输出值，而 $y_t$ 的结果就和普通神经网络结果一样，在RNN后面接入fc层和softmax层，求最大概率。</p>
+<h3>2. Seq2Seq框架2</h3>
+<p>该模型来自于论文<a href="https://arxiv.org/pdf/1409.3215.pdf" target="_blank" rel="noopener">Sequence to Sequence Learning with Neural Networks</a>，其模型结构：
+<img src="/images/seq2seq2.png" alt="seq2seq2">
+与上一模型不同的是，其source编码后的向量C直接作为Decoder阶段RNN的初始化state，而不是在每次Decoder时都作为RNN的输入，此外，Decoder训练时RNN的输入是target(目标值)，而不是前一时刻的输出，训练示意图
+<img src="/images/seq_train.png" alt="seq_train">
+解码示意图
+<img src="/images/seq_test.png" alt="seq_test"></p>
+<h3>3. Seq2Seq实战</h3>
+<p>利用TensorFlow来构建一个基础的Seq2Seq模型，通过向我们的模型输入一个单词（字母序列），例如apple，模型将按照字母顺序排序输出，即输出aelpp。
+数据集包括source和target，共10000条：
+<img src="/images/dataset.png" alt="数据集">
+开发步骤：</p>
+<blockquote>
+<ul>
+<li>target数据处理，结果为[GO, x, y, z, EOS, PAD]，当然输入不能为字符，所以我们需要建立一个ch2idx和idx3ch的关系</li>
+<li>gen_batch，一般我们都是一个batch这样一起训练</li>
+<li>构建Encoder网络</li>
+<li>构建Decoder网络（其中包含train和test的不同结构）</li>
+<li>连接Encoder和Decoder，组成Seq2Seq模型</li>
+<li>Running和predicting</li>
+</ul>
+</blockquote>
+<p>解释一下Seq2Seq框架2中加GO，EOS和PAD的原因，其目的就是告诉Decoder什么时候开始，什么时候结束，真正训练的时候，EOS并没有作为输入传递给RNN，因此我们需要将target中最后一个字符(EOS)去掉，同时还需要再前面加上开始标识(GO)。因为我们是batch一起训练，动态RNN展开，每一个batch需要固定序列长度，所以我们要加PAD。</p>
+<h3>4. 源码</h3>
+<p>该实验是用jupyter实现的，python3.6，tenserflow1.8</p>
+<blockquote>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/27608348" target="_blank" rel="noopener">参考这篇专栏</a></li>
+<li><a href="https://github.com/lipengwei/basic_seq2seq" target="_blank" rel="noopener">Github源码</a></li>
+</ul>
+</blockquote>
+<h2>Attention</h2>
+<h3>1. Seq2Seq思考</h3>
+<blockquote>
+<ul>
+<li>Encoder将输入编码为固定大小状态向量，是一个”信息有损压缩“的过程，
+信息量越大，那么损失的信息就越多。</li>
+<li>随着sequence length的增加，意味着时间维度上的序列很长，RNN模型
+会出现梯度弥散</li>
+<li>基础的模型连接Encoder和Decoder模块的组件仅仅是一个固定大小的状
+态向量，Decoder无法直接去关注到输入信息的更多细节</li>
+</ul>
+</blockquote>
+<p>既然Seq2Seq有这些劣势，那么要如何解决呢，答案就是Attention。</p>
+<hr>
+<h3>2. 什么叫注意力机制(Attention-based mechanism)?</h3>
+<p>注意到Decoder设计中，各个时刻都使用相同的记忆C，我们自然想到了可以在不同的时刻采用不同的记忆C，结构如下
+<img src="/images/attention.png" alt="attention">
+以下介绍两种简单的Attention结构。</p>
+<h3>3. Attention结构1</h3>
+<p>该模型来自于论文 <a href="https://arxiv.org/abs/1409.0473" target="_blank" rel="noopener">Neural Machine Translation by Jointly Learning to Align and Translate</a>，其模型结构如下
+<img src="/images/att1.png" alt="att1">
+Attention是为了得到不同时刻的C，那么我们从公式角度来看不同时刻C的计算过程：
+<img src="/images/att2.png" alt="att2">
+解释如下： $h_j$ 表示的是Encoder的隐层记忆， $s_i$表示Decoder结构中 $i$ 时刻的隐层记忆。公式从下往上看</p>
+<blockquote>
+<ul>
+<li>$s_i$ 是由 $s_{i-1}, y_{i-1}, c_i$ 三个值计算出来，分别表示Decoder上一时刻隐层记忆、输出和当前时刻的记忆</li>
+<li>计算 $c_i$ 需要计算 $\alpha_{ij}$ 和 $e_{ij}$</li>
+<li>$e_{ij}$ 通过 $s_{i-s}, h_j$ 计算得来，那么计算方法 $a$ 可以用一个小型的神经网络来逼近</li>
+<li>计算 $\alpha_{ij}$ 可以用一个类似softmax的方法用 $e_{ij}$ 计算得来</li>
+</ul>
+</blockquote>
+<p>通过这种计算，在Decoder过程中，每个时刻的 $s_i$ 都可以计算出对应的 $c_i$ ，训练和预测的方法和Seq2Seq的方式一样。</p>
+<h3>4. Attention结构2</h3>
+<p>该模型来自于论文 <a href="https://arxiv.org/abs/1508.04025" target="_blank" rel="noopener">Effective Approaches to Attention-based Neural Machine Translation</a>，结构如图
+<img src="/images/attention2.png" alt="attention2">
+模型公式如下：
+<img src="/images/att_ex.png" alt="att_ex">
+公式解释：同样是要 $c_t$ ，只是计算方式不同，这里指的是 $score$ 这个函数，一般有三种计算方式，论文指出general的方式取得了比较好的结果，看公式：
+$$socre(h_t, \bar h_s) = h_t^{\top} W_a \bar h_s$$
+表示的是Decoder的隐层记忆 $h_t^{\top}$ 与 Encoder的隐层记忆 $\bar h_s$ 通过一个注意力权重 $W_a$ 连起来，表示从target到source的映射关系，这个权重可以在训练过程中学习得到。</p>
+<h3>5、加入Attention的Seq2Seq如何实现？</h3>
+<p>Tensorflow提供了很多种Attention的API，这里我们使用第二种Attention的方式，官方示例如下：
+<img src="/images/code_att1.png" alt="code_att1">
+接入Decoder的解码过程
+<img src="/images/code_att2.png" alt="code_att2">
+模型实现示例图
+<img src="/images/exam_att" alt="exam_att">
+结果
+<img src="/images/res_att.png" alt="res_att">
+预测
+<img src="/images/pre_att.png" alt="pre_att"></p>
+<h3>6、源码</h3>
+<p>加入Attention的实现是在基础Seq2Seq上改进得来，也是jupyter版本。</p>
+<blockquote>
+<ul>
+<li><a href="https://github.com/lipengwei/basic_seq2seq_with_attention" target="_blank" rel="noopener">Github源码</a></li>
+</ul>
+</blockquote>
+<h2>总结</h2>
+<blockquote>
+<ul>
+<li>加入Attention的seq2seq有很多应用场景，在翻译领域取得了较好结果</li>
+<li>Attention的变形有很多，需要进一步研究</li>
+<li>Attention的一个最要优点就是可视化注意力权重，这里没用做</li>
+</ul>
+</blockquote>
+<h2>参考资料</h2>
+<blockquote>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/36440334" target="_blank" rel="noopener">Seq2seq模型及注意力机制</a></li>
+<li><a href="https://github.com/tensorflow/nmt" target="_blank" rel="noopener">Tensorflow官方机器翻译模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/34781297" target="_blank" rel="noopener">《attention is all you need》解读</a></li>
+</ul>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/RNN-Seq2Seq-Attention/" rel="tag"># RNN Seq2Seq Attention</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/03/CNN多标签分类实战/" rel="next" title="CNN多标签分类实战">
+                <i class="fa fa-chevron-left"></i> CNN多标签分类实战
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/10/CTC原理/" rel="prev" title="CTC原理">
+                CTC原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">李鹏伟</p>
+              <p class="site-description motion-element" itemprop="description">AI</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">序列到序列模型(Seq2Seq)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.1.</span> <span class="nav-text">1. Seq-to-Seq框架1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.</span> <span class="nav-text">2. Seq2Seq框架2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.3.</span> <span class="nav-text">3. Seq2Seq实战</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.</span> <span class="nav-text">4. 源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">Attention</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">1. Seq2Seq思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">2. 什么叫注意力机制(Attention-based mechanism)?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.3.</span> <span class="nav-text">3. Attention结构1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.4.</span> <span class="nav-text">4. Attention结构2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.5.</span> <span class="nav-text">5、加入Attention的Seq2Seq如何实现？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.6.</span> <span class="nav-text">6、源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李鹏伟</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+    
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
