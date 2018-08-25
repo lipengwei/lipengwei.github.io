@@ -108,23 +108,28 @@
 
 
 
-  <meta name="description" content="AI">
-<meta property="og:type" content="website">
-<meta property="og:title" content="李鹏伟的技术博客">
-<meta property="og:url" content="http://lipengwei.github.io/index.html">
+  <meta name="description" content="几种分布的概念   均匀分布，定义在区间 $[a,b] \ \ (a&amp;lt;b)$ 上连续变量的简单分布，记为 $U(x|a,b)$ 0-1 分布（伯努利分布），就是 $n=1$ 情况下的 二项分布 二项分布，重复 n次独立的伯努利分布，每次分布结果只有两种结果且独立 多项式分布，将伯努利分布的结果扩展到多维状态，在此基础上扩展二项分布，就是多项分布 高斯分布(正态分布)，若随机变量 $X$ 服从">
+<meta name="keywords" content="EM HMM GMM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="EM算法应用之GMM和HMM">
+<meta property="og:url" content="http://lipengwei.github.io/2018/08/18/EM算法应用之GMM和HMM/index.html">
 <meta property="og:site_name" content="李鹏伟的技术博客">
-<meta property="og:description" content="AI">
+<meta property="og:description" content="几种分布的概念   均匀分布，定义在区间 $[a,b] \ \ (a&amp;lt;b)$ 上连续变量的简单分布，记为 $U(x|a,b)$ 0-1 分布（伯努利分布），就是 $n=1$ 情况下的 二项分布 二项分布，重复 n次独立的伯努利分布，每次分布结果只有两种结果且独立 多项式分布，将伯努利分布的结果扩展到多维状态，在此基础上扩展二项分布，就是多项分布 高斯分布(正态分布)，若随机变量 $X$ 服从">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://lipengwei.github.io/images/mark.png">
+<meta property="og:image" content="http://lipengwei.github.io/images/hmm_f_b.png">
+<meta property="og:updated_time" content="2018-08-25T11:23:42.941Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="李鹏伟的技术博客">
-<meta name="twitter:description" content="AI">
+<meta name="twitter:title" content="EM算法应用之GMM和HMM">
+<meta name="twitter:description" content="几种分布的概念   均匀分布，定义在区间 $[a,b] \ \ (a&amp;lt;b)$ 上连续变量的简单分布，记为 $U(x|a,b)$ 0-1 分布（伯努利分布），就是 $n=1$ 情况下的 二项分布 二项分布，重复 n次独立的伯努利分布，每次分布结果只有两种结果且独立 多项式分布，将伯努利分布的结果扩展到多维状态，在此基础上扩展二项分布，就是多项分布 高斯分布(正态分布)，若随机变量 $X$ 服从">
+<meta name="twitter:image" content="http://lipengwei.github.io/images/mark.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://lipengwei.github.io/"/>
+  <link rel="canonical" href="http://lipengwei.github.io/2018/08/18/EM算法应用之GMM和HMM/"/>
 
 
 
@@ -134,7 +139,7 @@
   };
 </script>
 
-  <title>李鹏伟的技术博客</title>
+  <title>EM算法应用之GMM和HMM | 李鹏伟的技术博客</title>
   
 
 
@@ -181,8 +186,7 @@
     
   
 
-  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left 
-  page-home">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -219,7 +223,7 @@
         
         
           
-          <li class="menu-item menu-item-home menu-item-active">
+          <li class="menu-item menu-item-home">
     <a href="/" rel="section">
       <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
   </li>
@@ -271,9 +275,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -305,11 +309,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/18/EM算法应用之GMM和HMM/" itemprop="url">
-                  EM算法应用之GMM和HMM
-                </a>
+          <h1 class="post-title" itemprop="name headline">EM算法应用之GMM和HMM
               
             
           </h1>
@@ -384,9 +384,7 @@
       
 
       
-        
-          
-            <h2>几种分布的概念</h2>
+        <h2>几种分布的概念</h2>
 <blockquote>
 <ul>
 <li>均匀分布，定义在区间 $[a,b] \ \ (a&lt;b)$ 上连续变量的简单分布，记为 $U(x|a,b)$</li>
@@ -579,8 +577,6 @@ labels是加完blank后的列表 labels=[0,5,0,5,0,6]，真实label=[5,5,6]</li>
 </ul>
 </blockquote>
 
-          
-        
       
     </div>
 
@@ -598,296 +594,36 @@ labels是加完blank后的列表 labels=[0,5,0,5,0,6]，真实label=[5,5,6]</li>
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/10/CTC原理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="李鹏伟">
-      <meta itemprop="description" content="AI">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李鹏伟的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/10/CTC原理/" itemprop="url">
-                  CTC原理
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-08-10 16:24:28" itemprop="dateCreated datePublished" datetime="2018-08-10T16:24:28+08:00">2018-08-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-08-11 09:31:01" itemprop="dateModified" datetime="2018-08-11T09:31:01+08:00">2018-08-11</time>
-              
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/EM-HMM-GMM/" rel="tag"># EM HMM GMM</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2>CTC</h2>
-<p>传统的语音识别的模型中，我们对语音模型进行训练之前，往往都要将文本与语音进行严格的对齐操作。这样就有两点不太好：</p>
-<blockquote>
-<ul>
-<li>严格对齐要花费人力、时间</li>
-<li>严格对齐之后，模型预测出的label只是局部分类的结果，而无法给出整个序列的输出结果，往往要对预测出的label做一些后处理才可以得到我们最终想要的结果</li>
-</ul>
-</blockquote>
-<p>CTC是计算一种损失值，主要的优点是可以对没有对齐的数据进行自动对齐($\epsilon$表示'blank')
-<img src="/images/ctc.png" alt="ctc"></p>
-<h2>CTC的概念公式</h2>
-<h3>1.序列问题形式化</h3>
-<p>序列问题可以形式化为如下函数：
-$$\mathcal{N}_w: (\mathcal{R}^m)^T \rightarrow (\mathcal{R}^n)^T$$  其中，序列目标为字符串（词表的大小 $n$），即 $\mathcal{N}_w$ 为出为 $n$ 维多项概率分布（e.g. 经过 softmax 处理）。
-网络输出为： $y = \mathcal{N}_w$，其中， $y_k^t$ 表示 $t$ 时刻第 $k$ 项的概率。
-虽然没有限定 $\mathcal{N}_w$ 的形式，一般序列建模为神经网络模型RNN。</p>
-<h3>2. 从网络输出到标签 （Output to Labellings）</h3>
-<p>音频特征经过RNN的输出为 $y =[ T, V ]$ ， $T$  表示时间序列，也就是帧数， $V$ 表示所有音素的维度。然后用 $y_k^t$ 表示 $t$ 时刻输出标签为 $k$ 的概率，那么一条路径 $\pi = (\pi_1, \pi_2...\pi_t)$ 的输出概率为： $$p(\pi|x) = \prod_{t=1}^T y_{\pi_t}^t$$ 因为路径与最后的输出标签是多对一的关系，所以定义： $$p(l|x) =  \sum_{\pi \in \mathcal{B}^-1(l)} p(\pi|x)$$ 其中 $\mathcal{B}^-1(l)$ 表示所有经过 $B$ 映射变换后得到最终label的路径。
-我们的目标就是计算出最大的 $p(l|x)$ 。</p>
-<h3>3. 多路径映射 $B$</h3>
-<p>在现实之中，多个路径会对应一个正确的序列，所以定义映射 $B$ ，操作如下：</p>
-<blockquote>
-<ul>
-<li>合并连续的相同符号</li>
-<li>去掉 blank 字符</li>
-</ul>
-</blockquote>
-<p>例如： $B(a-ab-) = B(-aa--abb)=aab$ 。
-并且这个序列长度往往小于路径长度，那么序列最终的概率可以使用路径的概率之和表示： $$p(l|x) =  \sum_{\pi \in \mathcal{B}^-1(l)} p(\pi|x)$$ ,其中 $\mathcal{B}^-1(l)$ 表示长度为 $T$ 且经过 $B$ 结果为 $l$ 的字符串集合。</p>
-<h3>4. 构造分类器</h3>
-<p>让我们再确定一下我们的目标，我们的目标是通过输入序列 $x$ 得到输出序列 $y$ ，如果我们可以获得输出序列的分布 $p(l|x)$ ，选择其中概率最大的那一个作为「输出序列」即可。这个逻辑可以通过下面公式表示：
-<img src="/images/classify.png" alt="分类器"></p>
-<h3>5. 训练和Loss</h3>
-<p>CTC的loss函数定义如下： $$L(S)=-ln \coprod_{(x,l)\in S}p(l|x)=-\sum_{(x,l)\in S}ln p(l|x)$$ 式中 $S$ 表示的是训练集，那么我需要的就是找到一种高效的方法来计算 $p(l|x)$ 的最大值？</p>
-<hr>
-<p>使用 <strong><em>前向后向算法</em></strong> 可以高效计算出 $p(l|x)$ , 使用递推公式可以计算出前向概率 $\alpha_{t}(s)$ ,表示从 $1 \to t$ 时刻之前，所有 $l_{1} \to s$ 个输出的概率，公式为:
-<img src="/images/f1.png" alt="前向概率">
-同理使用递推公式计算出后向概率 $\beta_{t}(s)$ ，表示所有从 $t \to T$ 输出标签为 $s \to |l|$ 的概率，公式为:
-<img src="/images/b1.png" alt="后向概率">
-得到前向和后向概率，就可以计算出 $p(l|x)$ 的概率
-<img src="/images/likelyhood.png" alt="求极大似然">
-公式：
-<img src="/images/cp1.png" alt="计算p">
-所以 $p(l|x)$ 可以表示每个时刻输出label音素的概率之和
-$$p(l|x) = \sum_{\pi \in B^{-1}(l)}p(\pi|x) = \sum_{s=1}^{|l^{'}|} \frac{\alpha_t(s)\beta_t(s)}{y_{l_s}^t}$$</p>
-<h3>6、前向后向概率</h3>
-<h4>6.1 前向概率</h4>
-<p>数学定义：
-<img src="/images/f1.png" alt="前向概率">
-这样定义之后，显然会有如下的初始化：
-$$\alpha_1(1) = y_b^1$$
-$$\alpha_1(2) = y_{l_1}^1$$
-$$\alpha_1(s) = 0, \forall s &gt; 2$$
-即 $t = 1$ 时只可能有以下情况:</p>
-<blockquote>
-<ul>
-<li>输出 $b$ (blank) 的概率为 $y_b^1$</li>
-<li>输出 $l_1$，即 输出真实标签中的第一个的概率 $y_{l_1}^1$</li>
-<li>输出标签其他的概率为 0</li>
-</ul>
-</blockquote>
-<p>有了初始化，就可以列出递推公式：
-<img src="/images/fr1.png" alt="前向递推">
-解释如下：
-<img src="/images/forward.png" alt="前向概率">
-<img src="/images/efr.png" alt="前向概率解释"></p>
-<h4>6.2 后向概率</h4>
-<p>后向概率与前向概率一样，定义稍有不同：
-<img src="/images/b1.png" alt="后向概率">
-则有以下初始化定义( $|l_{'}|$ 表示加了 $b$ (blank)之后的标签长度 )：
-$$\beta_T(|l^\prime|) = y_b^T$$
-$$\beta_T(|l^\prime|-1) = y_{l_l}^T$$
-$$\beta_T(s) = 0, \forall s &lt; |l^\prime| - 1$$<br>
-即 $t=T$ 时刻，只有以下的概率输出:</p>
-<blockquote>
-<ul>
-<li>输出 $b$ 的概率 $y^{T}_{b}$</li>
-<li>输出 $|l^{'}|-1$ 即不加 $b$ 的真实标签的最后一个的概率 $y^T_{l_{|l|}}$</li>
-<li>输出其他概率为 0</li>
-</ul>
-</blockquote>
-<p>后向概率的递推关系:<br>
-<img src="/images/br1.png" alt="后向递推">
-解释如下：
-<img src="/images/ebr.png" alt="后向概率解释"></p>
-<h3>7、计算过程</h3>
-<p>根据递推关系式可以得到如下结果：
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># y表示RNN的特征输出， labels是带空格的</span></span><br><span class="line"><span class="comment"># 例如：labels = [0, 3, 0, 3, 0, 4, 0]  # 0 for blank</span></span><br><span class="line"><span class="comment"># y的shape=[T, V], labels的长度L=len(label) + len(blank)</span></span><br><span class="line"><span class="comment"># 通常来说，L = 2*len(label) + 1 </span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(y, labels)</span>:</span></span><br><span class="line">    T, V = y.shape</span><br><span class="line">    L = len(labels)</span><br><span class="line">    alpha = np.zeros([T, L])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># init</span></span><br><span class="line">    alpha[<span class="number">0</span>, <span class="number">0</span>] = y[<span class="number">0</span>, labels[<span class="number">0</span>]]</span><br><span class="line">    alpha[<span class="number">0</span>, <span class="number">1</span>] = y[<span class="number">0</span>, labels[<span class="number">1</span>]]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">1</span>, T):</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(L):</span><br><span class="line">            s = labels[i]</span><br><span class="line">            </span><br><span class="line">            a = alpha[t - <span class="number">1</span>, i] </span><br><span class="line">            <span class="keyword">if</span> i - <span class="number">1</span> &gt;= <span class="number">0</span>:</span><br><span class="line">                a += alpha[t - <span class="number">1</span>, i - <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> i - <span class="number">2</span> &gt;= <span class="number">0</span> <span class="keyword">and</span> s != <span class="number">0</span> <span class="keyword">and</span> s != labels[i - <span class="number">2</span>]:</span><br><span class="line">                a += alpha[t - <span class="number">1</span>, i - <span class="number">2</span>]</span><br><span class="line">                </span><br><span class="line">            alpha[t, i] = a * y[t, s]</span><br><span class="line">            </span><br><span class="line">    <span class="keyword">return</span> alpha</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">(y, labels)</span>:</span></span><br><span class="line">    T, V = y.shape</span><br><span class="line">    L = len(labels)</span><br><span class="line">    beta = np.zeros([T, L])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># init</span></span><br><span class="line">    beta[<span class="number">-1</span>, <span class="number">-1</span>] = y[<span class="number">-1</span>, labels[<span class="number">-1</span>]]</span><br><span class="line">    beta[<span class="number">-1</span>, <span class="number">-2</span>] = y[<span class="number">-1</span>, labels[<span class="number">-2</span>]]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(T - <span class="number">2</span>, <span class="number">-1</span>, <span class="number">-1</span>):</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(L):</span><br><span class="line">            s = labels[i]</span><br><span class="line">            </span><br><span class="line">            a = beta[t + <span class="number">1</span>, i] </span><br><span class="line">            <span class="keyword">if</span> i + <span class="number">1</span> &lt; L:</span><br><span class="line">                a += beta[t + <span class="number">1</span>, i + <span class="number">1</span>]</span><br><span class="line">            <span class="keyword">if</span> i + <span class="number">2</span> &lt; L <span class="keyword">and</span> s != <span class="number">0</span> <span class="keyword">and</span> s != labels[i + <span class="number">2</span>]:</span><br><span class="line">                a += beta[t + <span class="number">1</span>, i + <span class="number">2</span>]</span><br><span class="line">                </span><br><span class="line">            beta[t, i] = a * y[t, s]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta</span><br></pre></td></tr></table></figure></p>
-<p>这样每个时刻每个音素的前向和后向概率就计算好了。接下来计算每个时刻每个因素的梯度，即计算梯度:
-<img src="/images/grad.png" alt="grad">
-其中 $lab(s)={s: l_s^\prime = k}$ ,表达的意思是所有 $l_s=k$ 的 $s$ 的集合，因为满足条件的地方都是潜在的 $y_t^k$ 的概率贡献方。
-一般我们优化似然函数的对数，因此，梯度计算如下:
-<img src="/images/grad1.png" alt="grad1">
-其中，似然值在前向计算中已经求得，就是最后输出为 blank 或者 最后一个 $|l^{'}|$ 的前向概率值: $p(l|x) = \alpha_T(|l^\prime|) + \alpha_T(|l^\prime|-1)$ 。这样就可以根据前向后向概率计算出 $y=[T, V]$ 的所有梯度值，有了梯度值，就可以用梯度优化算法进行更新。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># y是RNN的输入， labels为加空格的标签</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">gradient</span><span class="params">(y, labels)</span>:</span></span><br><span class="line">    T, V = y.shape</span><br><span class="line">    L = len(labels)</span><br><span class="line">    </span><br><span class="line">    alpha = forward(y, labels)</span><br><span class="line">    beta = backward(y, labels)</span><br><span class="line">    p = alpha[<span class="number">-1</span>, <span class="number">-1</span>] + alpha[<span class="number">-1</span>, <span class="number">-2</span>]</span><br><span class="line">    </span><br><span class="line">    grad = np.zeros([T, V])</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(T):</span><br><span class="line">        <span class="keyword">for</span> s <span class="keyword">in</span> range(V):</span><br><span class="line">            <span class="comment"># 输出 s = l 标签的集合</span></span><br><span class="line">            lab = [i <span class="keyword">for</span> i, c <span class="keyword">in</span> enumerate(labels) <span class="keyword">if</span> c == s]</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> lab:</span><br><span class="line">                grad[t, s] += alpha[t, i] * beta[t, i] </span><br><span class="line">            grad[t, s] /= y[t, s] ** <span class="number">2</span></span><br><span class="line">                </span><br><span class="line">    grad /= p</span><br><span class="line">    <span class="keyword">return</span> grad</span><br></pre></td></tr></table></figure></p>
-<h3>8、解码</h3>
-<h4>8.1 贪心解码(greedy search)</h4>
-<p>最优路径即为最优输出：hexo
-$$h(x) \approx B(\pi^\star) \
-\pi^\star = \underset{\pi \in N^T}{argmax}\ p(\pi|x)$$
-简化后，解码过程（构造 $π^\star$）变得非常简单（基于独立性假设）： 在每个时刻输出概率最大的字符:
-$$\pi^\star = cat_{t=1}^T(\underset{s \in L^\prime}{argmax}\ y^t_s)$$
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输出删除blank</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">remove_blank</span><span class="params">(labels, blank=<span class="number">0</span>)</span>:</span></span><br><span class="line">    new_labels = []</span><br><span class="line">    <span class="comment"># e.g. [-,a,a,-,-,p,p,-,-,p,p,-,-,l,l,-,e,e,-,]</span></span><br><span class="line">    <span class="comment"># combine duplicate</span></span><br><span class="line">    previous = <span class="keyword">None</span></span><br><span class="line">    <span class="keyword">for</span> l <span class="keyword">in</span> labels:</span><br><span class="line">        <span class="keyword">if</span> l != previous:</span><br><span class="line">            new_labels.append(l)</span><br><span class="line">            previous = l</span><br><span class="line">    <span class="comment"># remove blank     </span></span><br><span class="line">    new_labels = [l <span class="keyword">for</span> l <span class="keyword">in</span> new_labels <span class="keyword">if</span> l != blank]</span><br><span class="line">    <span class="keyword">return</span> new_labels</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 贪心搜索</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">greedy_decode</span><span class="params">(y, blank=<span class="string">'-'</span>)</span>:</span></span><br><span class="line">    raw_rs = np.argmax(y, axis=<span class="number">1</span>)</span><br><span class="line">    rs = remove_blank(raw_rs, blank)</span><br><span class="line">    <span class="keyword">return</span> raw_rs, rs</span><br></pre></td></tr></table></figure></p>
-<h4>8.2 束搜索 (beam search)</h4>
-<p>贪心搜索的性能非常受限。例如，它不能给出除最优路径之外的其他其优路径。很多时候，如果我们能拿到nbest的路径，后续可以利用其他信息来进一步优化搜索的结果。束搜索能近似找出 top 最优的若干条路径。
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">beam_decode</span><span class="params">(y, beam_size=<span class="number">10</span>)</span>:</span></span><br><span class="line">    T, V = y.shape</span><br><span class="line">    log_y = np.log(y)</span><br><span class="line"></span><br><span class="line">    beam = [([], <span class="number">0</span>)]</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(T):  <span class="comment"># for every timestep</span></span><br><span class="line">        new_beam = []</span><br><span class="line">        <span class="keyword">for</span> prefix, score <span class="keyword">in</span> beam:</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> range(V):  <span class="comment"># for every state</span></span><br><span class="line">                new_prefix = prefix + [i]</span><br><span class="line">                new_score = score + log_y[t, i]</span><br><span class="line"></span><br><span class="line">                new_beam.append((new_prefix, new_score) \ \ )</span><br><span class="line"></span><br><span class="line">        <span class="comment"># top beam_size</span></span><br><span class="line">        new_beam.sort(key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>], reverse=<span class="keyword">True</span>)</span><br><span class="line">        beam = new_beam[:beam_size]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beam</span><br></pre></td></tr></table></figure></p>
-<h4>8.3 前缀束搜索（Prefix Beam Search）（还没有看明白）</h4>
-<h3>9. 错误率LER (Label Error Rate)</h3>
-<p>字母定义 $x$ 表示输入序列， $z$ 表示标签序列(label)， $h:x\to z$ 为分类器。
-$$ LER(h,S^{'}) = \frac{1}{Z}\sum_{(x,z)\in S}ED(h(x),z) $$
-$ED$ 表示编辑距离。</p>
-<h2>总结</h2>
-<p>采用CTC端到端训练，就是采用前向后向算法，计算出 $p(l|x)$ 的最大值，这样 $loss = -ln \ \ p(l|x)$ 就是最小值，计算出输出便签概率的梯度，就可以使用梯度下降法做优化，优化的结果使得RNN的输出 $y$ 的解码结果 $h(x)$ 与加了 $b$ 的标签越来越接近，最后的输出删除 $b$ 后的结果。</p>
-<p><strong>大致步骤</strong>：</p>
-<blockquote>
-<ul>
-<li>CNN + RNN 特征提取，得到 $y = [帧数，音素数]$</li>
-<li>计算 $p(l|x)$ ，优化使之最大</li>
-<li>解码 $y$ 得到 $h(x)$，用 $ED(h(x),l)$ 计算与标签的编辑距离</li>
-</ul>
-</blockquote>
-<h2>参考资料</h2>
-<blockquote>
-<ul>
-<li><a href="http://x-algo.cn/index.php/2017/05/31/2345/" target="_blank" rel="noopener">CTC原理</a></li>
-<li><a href="https://blog.csdn.net/JackyTintin/article/details/79425866" target="_blank" rel="noopener">CTC原理及实现</a></li>
-<li><a href="https://github.com/DingKe/ml-tutorial/blob/master/ctc/CTC.ipynb" target="_blank" rel="noopener">CTC原理及实现ipynb</a></li>
-<li><a href="https://blog.csdn.net/luodongri/article/details/77005948" target="_blank" rel="noopener">白话CTC(connectionist temporal classification)算法讲解</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/41331716" target="_blank" rel="noopener">TensorFlow源码解读之ctc loss</a></li>
-</ul>
-</blockquote>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/10/CTC原理/" rel="next" title="CTC原理">
+                <i class="fa fa-chevron-left"></i> CTC原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -897,18 +633,15 @@ $ED$ 表示编辑距离。</p>
   </article>
 
 
-    
-  </section>
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
-  </nav>
-
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -929,8 +662,17 @@ $ED$ 表示编辑距离。</p>
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -1006,6 +748,22 @@ $ED$ 表示编辑距离。</p>
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">几种分布的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">高斯混合模型(GMM)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">1、单个高斯模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">2、混合模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">EM算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">3.1.</span> <span class="nav-text">EM参考资料</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text">概率图模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.1.</span> <span class="nav-text">1、马尔可夫链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.2.</span> <span class="nav-text">2、HMM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.</span> <span class="nav-text">3、隐马尔可夫模型的3个基本问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.1.</span> <span class="nav-text">1.概率计算问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.2.</span> <span class="nav-text">2、学习问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.3.3.</span> <span class="nav-text">3、预测问题（也称解码Decoding）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.4.</span> <span class="nav-text">4、前向后向算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.5.</span> <span class="nav-text">5、B-W算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">4.5.1.</span> <span class="nav-text">B-W算法参考资料</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.</span> <span class="nav-text">6、预测算法（Viterbi）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.0.1.</span> <span class="nav-text">(1) 初始化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.0.2.</span> <span class="nav-text">(2) 递推，对 $t=2,3,...,T$</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.0.3.</span> <span class="nav-text">(3) 终止</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">4.6.0.4.</span> <span class="nav-text">(4) 最优化路径回溯. 对 $t=T-1,T-2,...,1$</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.7.</span> <span class="nav-text">7、Viterbi强制解码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">4.8.</span> <span class="nav-text">第三代语音识别 GMM+HMM</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -1136,6 +894,10 @@ $ED$ 表示编辑距离。</p>
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
 
   
 
@@ -1175,14 +937,6 @@ $ED$ 表示编辑距离。</p>
   
 
   
-  
-    
-      
-        
-      
-    
-      
-    
   
 
   

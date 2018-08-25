@@ -288,6 +288,274 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/05/RNN应用之Seq2Seq和Attention/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="李鹏伟">
+      <meta itemprop="description" content="AI">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="李鹏伟的技术博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/05/RNN应用之Seq2Seq和Attention/" itemprop="url">
+                  RNN应用之Seq2Seq和Attention
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-05 13:43:03" itemprop="dateCreated datePublished" datetime="2018-08-05T13:43:03+08:00">2018-08-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-08-11 18:59:05" itemprop="dateModified" datetime="2018-08-11T18:59:05+08:00">2018-08-11</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2>序列到序列模型(Seq2Seq)</h2>
+<p>RNN是一种处理序列数据的神经网络，输入是序列，输出也是序列，所有有人就提出了基于Encoder到Decoder的模型结构来处理序列到序列的应用。最基础的Seq2Seq模型包含了三个部分，即Encoder、Decoder以及连接两者的中间状态向量，Encoder通过学习输入，将其编码成一个固定大小的状态向量S，继而将S传递给Decoder，Decoder再通过对状态向量S的学习来进行输出。以下介绍两种Seq2Seq的模型结构。</p>
+<h3>1. Seq-to-Seq框架1</h3>
+<p>该模型来自于论文<a href="https://arxiv.org/pdf/1406.1078.pdf" target="_blank" rel="noopener">Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation</a>，其结构图：
+<img src="/images/seq2seq1.png" alt="seq2seq1">
+Encoder阶段将整个source序列编码成一个固定维度的向量C（也就是RNN最终隐层状态），计算公式：
+$$C=\tanh(Vh^N)$$ V表示权重矩阵， $h^N$ 表示Encoder阶段最后一个输入的隐层状态(也可以理解为整个序列的编码记忆)。</p>
+<hr>
+<p>Decoder也是一个RNN网络， $C$ 作为初始化隐层状态传入（理解为将Encoder序列解码），其隐层状态 $h$ 的计算公式：
+$$h_t = f(h_{t-1}, y_{t-1}, C)$$
+其中 $h_{t-1}$ 和 $y_{t-1}$ 表示前一时刻隐层值和输出值，而 $y_t$ 的结果就和普通神经网络结果一样，在RNN后面接入fc层和softmax层，求最大概率。</p>
+<h3>2. Seq2Seq框架2</h3>
+<p>该模型来自于论文<a href="https://arxiv.org/pdf/1409.3215.pdf" target="_blank" rel="noopener">Sequence to Sequence Learning with Neural Networks</a>，其模型结构：
+<img src="/images/seq2seq2.png" alt="seq2seq2">
+与上一模型不同的是，其source编码后的向量C直接作为Decoder阶段RNN的初始化state，而不是在每次Decoder时都作为RNN的输入，此外，Decoder训练时RNN的输入是target(目标值)，而不是前一时刻的输出，训练示意图
+<img src="/images/seq_train.png" alt="seq_train">
+解码示意图
+<img src="/images/seq_test.png" alt="seq_test"></p>
+<h3>3. Seq2Seq实战</h3>
+<p>利用TensorFlow来构建一个基础的Seq2Seq模型，通过向我们的模型输入一个单词（字母序列），例如apple，模型将按照字母顺序排序输出，即输出aelpp。
+数据集包括source和target，共10000条：
+<img src="/images/dataset.png" alt="数据集">
+开发步骤：</p>
+<blockquote>
+<ul>
+<li>target数据处理，结果为[GO, x, y, z, EOS, PAD]，当然输入不能为字符，所以我们需要建立一个ch2idx和idx3ch的关系</li>
+<li>gen_batch，一般我们都是一个batch这样一起训练</li>
+<li>构建Encoder网络</li>
+<li>构建Decoder网络（其中包含train和test的不同结构）</li>
+<li>连接Encoder和Decoder，组成Seq2Seq模型</li>
+<li>Running和predicting</li>
+</ul>
+</blockquote>
+<p>解释一下Seq2Seq框架2中加GO，EOS和PAD的原因，其目的就是告诉Decoder什么时候开始，什么时候结束，真正训练的时候，EOS并没有作为输入传递给RNN，因此我们需要将target中最后一个字符(EOS)去掉，同时还需要再前面加上开始标识(GO)。因为我们是batch一起训练，动态RNN展开，每一个batch需要固定序列长度，所以我们要加PAD。</p>
+<h3>4. 源码</h3>
+<p>该实验是用jupyter实现的，python3.6，tenserflow1.8</p>
+<blockquote>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/27608348" target="_blank" rel="noopener">参考这篇专栏</a></li>
+<li><a href="https://github.com/lipengwei/basic_seq2seq" target="_blank" rel="noopener">Github源码</a></li>
+</ul>
+</blockquote>
+<h2>Attention</h2>
+<h3>1. Seq2Seq思考</h3>
+<blockquote>
+<ul>
+<li>Encoder将输入编码为固定大小状态向量，是一个”信息有损压缩“的过程，
+信息量越大，那么损失的信息就越多。</li>
+<li>随着sequence length的增加，意味着时间维度上的序列很长，RNN模型
+会出现梯度弥散</li>
+<li>基础的模型连接Encoder和Decoder模块的组件仅仅是一个固定大小的状
+态向量，Decoder无法直接去关注到输入信息的更多细节</li>
+</ul>
+</blockquote>
+<p>既然Seq2Seq有这些劣势，那么要如何解决呢，答案就是Attention。</p>
+<hr>
+<h3>2. 什么叫注意力机制(Attention-based mechanism)?</h3>
+<p>注意到Decoder设计中，各个时刻都使用相同的记忆C，我们自然想到了可以在不同的时刻采用不同的记忆C，结构如下
+<img src="/images/attention.png" alt="attention">
+以下介绍两种简单的Attention结构。</p>
+<h3>3. Attention结构1</h3>
+<p>该模型来自于论文 <a href="https://arxiv.org/abs/1409.0473" target="_blank" rel="noopener">Neural Machine Translation by Jointly Learning to Align and Translate</a>，其模型结构如下
+<img src="/images/att1.png" alt="att1">
+Attention是为了得到不同时刻的C，那么我们从公式角度来看不同时刻C的计算过程：
+<img src="/images/att2.png" alt="att2">
+解释如下： $h_j$ 表示的是Encoder的隐层记忆， $s_i$表示Decoder结构中 $i$ 时刻的隐层记忆。公式从下往上看</p>
+<blockquote>
+<ul>
+<li>$s_i$ 是由 $s_{i-1}, y_{i-1}, c_i$ 三个值计算出来，分别表示Decoder上一时刻隐层记忆、输出和当前时刻的记忆</li>
+<li>计算 $c_i$ 需要计算 $\alpha_{ij}$ 和 $e_{ij}$</li>
+<li>$e_{ij}$ 通过 $s_{i-s}, h_j$ 计算得来，那么计算方法 $a$ 可以用一个小型的神经网络来逼近</li>
+<li>计算 $\alpha_{ij}$ 可以用一个类似softmax的方法用 $e_{ij}$ 计算得来</li>
+</ul>
+</blockquote>
+<p>通过这种计算，在Decoder过程中，每个时刻的 $s_i$ 都可以计算出对应的 $c_i$ ，训练和预测的方法和Seq2Seq的方式一样。</p>
+<h3>4. Attention结构2</h3>
+<p>该模型来自于论文 <a href="https://arxiv.org/abs/1508.04025" target="_blank" rel="noopener">Effective Approaches to Attention-based Neural Machine Translation</a>，结构如图
+<img src="/images/attention2.png" alt="attention2">
+模型公式如下：
+<img src="/images/att_ex.png" alt="att_ex">
+公式解释：同样是要 $c_t$ ，只是计算方式不同，这里指的是 $score$ 这个函数，一般有三种计算方式，论文指出general的方式取得了比较好的结果，看公式：
+$$socre(h_t, \bar h_s) = h_t^{\top} W_a \bar h_s$$
+表示的是Decoder的隐层记忆 $h_t^{\top}$ 与 Encoder的隐层记忆 $\bar h_s$ 通过一个注意力权重 $W_a$ 连起来，表示从target到source的映射关系，这个权重可以在训练过程中学习得到。</p>
+<h3>5、加入Attention的Seq2Seq如何实现？</h3>
+<p>Tensorflow提供了很多种Attention的API，这里我们使用第二种Attention的方式，官方示例如下：
+<img src="/images/code_att1.png" alt="code_att1">
+接入Decoder的解码过程
+<img src="/images/code_att2.png" alt="code_att2">
+模型实现示例图
+<img src="/images/exam_att.png" alt="exam_att">
+结果
+<img src="/images/res_att.png" alt="res_att">
+预测
+<img src="/images/pre_att.png" alt="pre_att"></p>
+<h3>6、源码</h3>
+<p>加入Attention的实现是在基础Seq2Seq上改进得来，也是jupyter版本。</p>
+<blockquote>
+<ul>
+<li><a href="https://github.com/lipengwei/basic_seq2seq_with_attention" target="_blank" rel="noopener">Github源码</a></li>
+</ul>
+</blockquote>
+<h2>总结</h2>
+<blockquote>
+<ul>
+<li>加入Attention的seq2seq有很多应用场景，在翻译领域取得了较好结果</li>
+<li>Attention的变形有很多，需要进一步研究</li>
+<li>Attention的一个最要优点就是可视化注意力权重，这里没用做</li>
+</ul>
+</blockquote>
+<h2>参考资料</h2>
+<blockquote>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/36440334" target="_blank" rel="noopener">Seq2seq模型及注意力机制</a></li>
+<li><a href="https://github.com/tensorflow/nmt" target="_blank" rel="noopener">Tensorflow官方机器翻译模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/34781297" target="_blank" rel="noopener">《attention is all you need》解读</a></li>
+</ul>
+</blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/03/CNN多标签分类实战/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -492,317 +760,6 @@ Inception V3主要在两方面做了改进，一是引入了Factorization into s
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://lipengwei.github.io/2018/08/03/深度学习调参与优化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="李鹏伟">
-      <meta itemprop="description" content="AI">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="李鹏伟的技术博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/03/深度学习调参与优化/" itemprop="url">
-                  深度学习调参与优化
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-08-03 21:20:59 / 修改时间：15:11:24" itemprop="dateCreated datePublished" datetime="2018-08-03T21:20:59+08:00">2018-08-03</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>一个深度学习的应用，可能在于三方面，数据、模型与优化。其中数据时最关键的，但是数据是客观的，不易改动。一个模型搭建好了，有时候不是不能用，而是没有找到合适的超参数，以及合适的优化方法。如果这两方面做好了，还是没有训练出好的结果，那么我们只能更改模型了。</p>
-<h3>提升模型性能的想法</h3>
-<blockquote>
-<ul>
-<li>从数据上提升性能</li>
-<li>从算法上提升性能</li>
-<li>从算法调优上提升性能</li>
-<li>从模型融合上提升性能</li>
-</ul>
-</blockquote>
-<p>这些可能并不完整，但在深度学习领域，有时候往往只需一个方面能够得到提升，整个模型的结构就会好上很多。</p>
-<h3>1.从数据上提升性能</h3>
-<p>调整训练数据或是调整问题定义的方法，可能会带来巨大的效果改善</p>
-<blockquote>
-<ul>
-<li>收集更多的数据</li>
-</ul>
-</blockquote>
-<p>尽可能的收集数据，同时确保数据集的质量</p>
-<blockquote>
-<ul>
-<li>产生更多的数据（噪声点，图像平移，旋转）
-如果你的数据是数值型的向量，那么随机生成已有向量的变形向量。
-如果你的数据是图像，用已有的图像随机生成相似图像。
-可以使用生成模型来生成，也可以使用一些经验技巧。</li>
-<li>对数据做缩放
-使用神经网络模型的一条经验法宝就是：将数据缩放到激活函数的阈值范围。
-例如1.归一化到0 ~ 1, 2.归一化到-1 ~ 1, 3. 标准化</li>
-<li>对数据做变换
-与上一节的方法相关，但是需要更多的工作量。你必须真正了解所用到的数据。数据可视化，然后挑出异常值。先猜测每一列数据的分布</li>
-<li>特征选择
-神经网络受不相关数据的影响很小。它们会对此赋予一个趋近于0的权重，几乎忽略此特征对预测值的贡献。你是否可以移除训练数据的某些属性呢？我们有许多的特征选择方法和特征重要性方法来鉴别哪些特征可以保留，哪些特征需要移除。</li>
-</ul>
-</blockquote>
-<h3>2.从算法上提升性能</h3>
-<p>机器学习总是与算法相关。所有的理论和数学知识都在描述从数据中学习决策过程的不同方法。以下是深度学习优化器，对比其中的优劣势，来选择合适的优化算法。</p>
-<h4>1.BGD(Batch Gradient Descent)</h4>
-<p>每次更新我们需要计算整个数据集的梯度，因此使用批量梯度下降进行优化时，计算速度很慢，而且对于不适合内存计算的数据将会非常棘手。批量梯度下降算法不允许我们实时更新模型$$\theta = \theta - \eta \nabla J(\theta)$$,但是BGD算法能确保收敛到凸平面的全局最优和非凸平面的局部最优。tensorflow中的接口是 <code>tf.train.GradientDescentOptimizer</code>,</p>
-<h4>2.SGD(Stochastic Gradient Descent)</h4>
-<p>随机梯度下降算法参数更新针对每一个样本$x_{i}$和$y_{i}$，批量梯度下降算法在大数据量时会产生大量的冗余计算，比如：每次针对相似样本都会重新计算。这种情况下，SGD算法每次只更新一次，因此SGD算法更快，适合做online。$$\theta = \theta - \eta \nabla J(\theta;x^{i},y^{i})$$,但SGD以高方差进行快速更新，会导致目标函数出现抖动情况。有两种情况：</p>
-<blockquote>
-<ul>
-<li>因为计算的抖动可以让梯度计算挑出局部最优，到达一个更好的最优点</li>
-<li>SGD会次因产生过拟合</li>
-</ul>
-</blockquote>
-<h4>3.MBGD(Min-batch Gradient Descent)</h4>
-<p>该算法有两个好处：</p>
-<blockquote>
-<ul>
-<li>减少参数更新的变化，可以带来更稳定的收敛</li>
-<li>可以充分利用矩阵优化，计算更高效</li>
-</ul>
-</blockquote>
-<p>但是Min-batch梯度下降不保证好的收敛性。$$\theta=\theta-\eta \nabla J(\theta;x^{(i;i+n)};y^{(i;i+n)})$$，n表示一次更新的数量。
-BGD、SGD、MBGD算法都需要预先设置学习率，并且整个模型计算过程都采用相同的学习率，这会带来一些问题。后面会写到学习率的调整策略。</p>
-<h4>4.Momentum（动量）</h4>
-<p>动量可以加速SGD算法的收敛速度，并且降低SGD算法收敛时的震荡。$$v_{t}=\lambda v_{t-1} + \eta \nabla J(\theta)$$ $$\theta = \theta - v_{t}$$，通过添加一个衰减因子到历史更新向量，并加上当前的更新向量。当梯度保持相同方向是，动量因子加速更新参数，而梯度方向改变时，动量因子能降低梯度更新速度。</p>
-<h4>5.Adagrad</h4>
-<p>Adagrad优化算法是一种自适应优化算法，针对高频特征更新步长较小，而低频特征更新较大。因此该算法适合应用在特征稀疏的场景。
-先前的算法对每一次参数更新都是采用同一个学习率，而Adagrad算法每一步采用不同的学习率进行更新。SGD算法调参公式：$$\theta_{t+1,i}=\theta_{t,i}-\eta g_{t,i}$$，Adagrad算法在每一步的计算时候，根据历史梯度对学习率进行修改：
-$$\theta_{t+1,i}=\theta_{t,i}-\frac{\eta}{\sqrt{G_{t} + \epsilon}} g_{t,i}$$,
-其中$ G_{t}=\sum_{i=0}^{t}(g^{i})^{2}$，Adagrad算法的主要优点是它避免了手动调整学习率的麻烦，大部分使用默认的0.01。Adagrad算法的主要缺点在于，其分母梯度的平方累加和，因为每次加入的都是一个正数，随着训练的进行，学习率将会变得无限小，此时算法将不能进行参数的迭代更新。</p>
-<h4>6.Adadelta</h4>
-<p>Adadelta算法是Adagrad算法的改进版，它主要解决了adagrad算法单调递减学习率的问题。通过约束历史梯度累加来替代累加所有历史梯度平方。这里通过在历史梯度上添加衰减因子，并通过迭代的方式来对当前的梯度进行计算，最终距离较远的梯度对当前的影响较小，而距离当前时刻较近的梯度对当前梯度的计算影响较大。</p>
-<h4>7.RMDprop</h4>
-<p>RMSPprop算法和adadelta算法都是adagrad算法的优化版，用于解决adagrad算法学习率消失的问题，从最终的计算公式来看，RMSProp算法和Adadelta算法有相似的计算表达式:$$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\theta^{t+1}=\theta^{t}-\eta \frac{g^{t}}{\sqrt{r^{t} + \epsilon}}$$，一般情况下，$\rho=0.9$</p>
-<h4>8.Adam</h4>
-<p>Adam算法是另一种自适应参数更新算法。和Adadelta、RMSProp算法一样，对历史平方梯度$v^{t}$乘上一个衰减因子，adam算法还存储了一个历史梯度$r^{t}$。$$v^{t+1}=\lambda r^{t}+(1-\lambda)g^{t}$$    $$r^{t}=\rho r^{t-1}+(1-\rho)(g^{t})^{2}$$ $$\hat v^{t} = \frac{v^{t}}{1-\lambda}$$  $$\hat r^{t} = \frac{r^{t}}{1-\rho}$$ $$\theta^{t+1} = \theta^{t} - \eta \frac{\hat v^{t}}{\sqrt{\hat r^{t} + \epsilon}}$$</p>
-<h4>总结</h4>
-<p>当训练数据特征较为稀疏的时候，采用自适应的优化器通常能获得更好的性能，而且我们采用自适应优化器的默认值即可获得较优的性能。</p>
-<p>RMSprop算法是adagrad算法的优化版，它解决了学习率趋近于零的问题。Adadelta算法和RMSprop算法类似，区别在于Adadelta用参数的RMS作为更新规则的分子。最后，Adam则是在RMSprop的基础上加入了偏差校正和动量。综上来看，Adam可能是最佳的选择。</p>
-<p>所以，如果你想模型更快的收敛或者训练一个深层次、复杂度较高的网络，自适应的优化器应该是首选优化器。</p>
-<h3>3.从算法调优上提升性能</h3>
-<p>你通过算法筛选往往总能找出一到两个效果不错的算法。但想要达到这些算法的最佳状态需要耗费数日、数周甚至数月。下面是一些常用技巧，在调参时能有助于提升算法的性能。</p>
-<h4>1.数据集、验证集、测试集</h4>
-<p>只有知道为何模型的性能不再有提升了，才能达到最好的效果。一种快速查看模型性能的方法就是每一步计算模型在训练集和验证集上的表现，计算出在训练集和验证集上测试模型的准确率。</p>
-<blockquote>
-<ul>
-<li>如果训练集的效果好于验证集，说明可能存在过拟合的现象，试一试增加正则项。</li>
-<li>如果训练集和验证集的准确率都很低，说明可能存在欠拟合，你可以继续提升模型的能力，延长训练步骤。</li>
-<li>如果训练集和验证集的曲线有一个焦点，可能需要用到early stopping的技巧了。</li>
-</ul>
-</blockquote>
-<h4>2.初始化权重</h4>
-<p>有一条经验规则：用小的随机数初始化权重。事实上，这可能已经足够了。还有几种可以尝试的策略：</p>
-<blockquote>
-<ul>
-<li>尝试所有的初始化方法(全0，全1，正态高斯截断，glorot初始化等)
-参考这篇 <a href="http://deepdish.io/2015/02/24/network-initialization/" target="_blank" rel="noopener">深度网络模型的初始化</a></li>
-<li>试一试用非监督式方法预学习，比如自动编码机</li>
-<li>迁移学习</li>
-</ul>
-</blockquote>
-<h4>3.学习率</h4>
-<p>调节学习率也能带来效果提升。策略如下：</p>
-<blockquote>
-<ul>
-<li>尝试非常大、非常小的学习率</li>
-<li>尝试逐步减小学习率</li>
-<li>尝试自适应学习率</li>
-</ul>
-</blockquote>
-<h4>4.激活函数</h4>
-<p>常用的激活函数有sigmoid,tanh,RelU,他们各有优缺点，可以都尝试一下：
-sigmoid特点：</p>
-<blockquote>
-<ul>
-<li>容易饱和，出现梯度消失，需要注意参数初始化方式来避免饱和</li>
-<li>输出不是0均值，会对梯度产生影响</li>
-</ul>
-</blockquote>
-<p>tanh 特点：</p>
-<blockquote>
-<ul>
-<li>也存在梯度消失的问题，但是是0均值，收敛速度比sigmoid快</li>
-</ul>
-</blockquote>
-<p>RelU 特点：</p>
-<blockquote>
-<ul>
-<li>收敛速度比sigmoid和tanh快很多</li>
-<li>可以缓和梯度消失现象</li>
-<li>存在硬饱和现象和偏移现象</li>
-</ul>
-</blockquote>
-<h4>5.网络结构</h4>
-<p>调整网络的拓扑结构也会有一些帮助。你需要设计多少个节点，需要几层网络呢？策略如下：</p>
-<blockquote>
-<ul>
-<li>试一试加一层有许多节点的隐层（拓宽）</li>
-<li>试一试一个深层的神经网络（拓深）</li>
-<li>尝试结合以上两种</li>
-<li>查看近期论文</li>
-</ul>
-</blockquote>
-<h4>6.batch和epoch</h4>
-<p>batch的大小决定了梯度值，以及权重更新的频率。一个epoch指的是训练集的所有样本都参与了一轮训练，以batch为序。你尝试过不同的batch大小和epoch的次数。</p>
-<h4>7.正则项</h4>
-<p>正则化是克服训练数据过拟合的好方法。有以下策略可以尝试：</p>
-<blockquote>
-<ul>
-<li>增加L1正则项 ($C=C_{0}+\frac{\lambda}{n} \sum_{w}|w|$)
-L1正则项的作用时可以让一些权重为0，让权重矩阵稀疏</li>
-<li>增加L2正则项($C=C_{0}+\frac{\lambda}{2n} \sum_{w}w^{2} $)
-L2正则的作用时让权重值尽可能的小</li>
-</ul>
-</blockquote>
-<p><img src="/images/l1l2.png" alt="L1与L2正则"></p>
-<blockquote>
-<ul>
-<li>增加dropout层。
-在一次循环中我们通过概率将神经层中的一些单元临时隐藏，然后再进行该次循环中神经网络的训练和优化过程。在训练时，每个神经单元以概率p被保留(dropout丢弃率为1-p)；在测试阶段，每个神经单元都是存在的，权重参数w要乘以p，成为：pw。<a href="https://www.cnblogs.com/makefile/p/dropout.html" target="_blank" rel="noopener">dropout详解</a></li>
-<li>增加BN层（Batch Normalization）
-BN算法通过对一个Batch的输出归一化。使得梯度始终在非饱和区。</li>
-</ul>
-</blockquote>
-<p>看图理解BN：
-<img src="/images/bn1.png" alt="BN1">
-<img src="/images/bn1.png" alt="BN2">
-BN算法过程：
-<img src="/images/bn3.png" alt="BN3">
-BN的优点：</p>
-<blockquote>
-<ul>
-<li>你可以选择比较大的初始化学习率，因为BN算法学习率衰减的很快。</li>
-<li>你可以不用理会dropout、L2正则项参数选择问题，采用BN后，可以移除这两项参数，或者可以选择更小的L2约束参数。BN提高了网络泛化能力</li>
-<li>不需要使用局部相应归一化层了(Alexnet网络用到的方法，CV)，因为BN本身就是一个归一化网络层</li>
-</ul>
-</blockquote>
-<h3>4.用融合方法提升效果</h3>
-<p>你可以将多个模型的预测结果融合。继模型调优之后，这是另一个大的提升领域。事实上，往往将几个效果还可以的模型的预测结果融合，取得的效果要比多个精细调优的模型分别预测的效果好。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -850,7 +807,7 @@ BN的优点：</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-count">10</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -883,7 +840,9 @@ BN的优点：</p>
                     
                       
                     
-                    <span class="site-state-item-count">9</span>
+                      
+                    
+                    <span class="site-state-item-count">10</span>
                     <span class="site-state-item-name">标签</span>
                   
                 </div>
